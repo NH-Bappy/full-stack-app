@@ -31,16 +31,21 @@ export const issueBook = async (req, res) => {
       return res.status(409).json({ message: 'Book is already issued' });
     }
 
-    const transaction = await prisma.transaction.create({
-      data: {
-        studentId: student.id,
-        bookId: book.id,
-      },
-    });
+    const transaction = await prisma.$transaction(async (tx) => {
+      const trans = await tx.transaction.create({
+        data: {
+          studentId: student.id,
+          bookId: book.id,
+          issuedByAdminId: req.admin?.id,
+        },
+      });
 
-    await prisma.book.update({
-      where: { id: book.id },
-      data: { available: false },
+      await tx.book.update({
+        where: { id: book.id },
+        data: { available: false },
+      });
+
+      return trans;
     });
 
     getIO().emit('bookIssued', {
@@ -82,14 +87,20 @@ export const returnBook = async (req, res) => {
     const daysBorrowed = Math.max(1, Math.ceil((returnDate - transaction.issueDate) / (1000 * 60 * 60 * 24)));
     const fine = daysBorrowed > 7 ? (daysBorrowed - 7) * FINE_PER_DAY : 0;
 
-    await prisma.transaction.update({
-      where: { id: transaction.id },
-      data: { returnDate, fine },
-    });
+    await prisma.$transaction(async (tx) => {
+      await tx.transaction.update({
+        where: { id: transaction.id },
+        data: {
+          returnDate,
+          fine,
+          returnedByAdminId: req.admin?.id,
+        },
+      });
 
-    await prisma.book.update({
-      where: { id: book.id },
-      data: { available: true },
+      await tx.book.update({
+        where: { id: book.id },
+        data: { available: true },
+      });
     });
 
     getIO().emit('bookReturned', {
