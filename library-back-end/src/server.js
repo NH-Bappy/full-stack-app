@@ -10,6 +10,7 @@ import studentRoutes from './routes/studentRoutes.js';
 import bookRoutes from './routes/bookRoutes.js';
 import libraryRoutes from './routes/libraryRoutes.js';
 import demoRoutes from './routes/demoRoutes.js';
+import reportsRoutes from './routes/reportsRoutes.js';
 
 config();
 
@@ -29,6 +30,7 @@ app.use('/api/students', studentRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api', libraryRoutes);
 app.use('/api/demo', demoRoutes);
+app.use('/api/reports', reportsRoutes);
 
 export { initSocket };
 
