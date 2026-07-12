@@ -19,14 +19,31 @@ export const createBook = async (req, res) => {
     return res.status(400).json({ message: 'Title, author, and rfidUid are required' });
   }
 
+  // Cover image file is mandatory
+  if (!req.file) {
+    return res.status(400).json({ message: 'Book cover image is required (.png, .jpg, .jpeg, or .pdf)' });
+  }
+
   try {
     const existingBook = await prisma.book.findUnique({ where: { rfidUid } });
     if (existingBook) {
       return res.status(409).json({ message: 'RFID UID is already assigned to another book' });
     }
 
+    const coverImagePath = '/uploads/' + req.file.filename;
+    
+    // Parse boolean from multipart text input
+    const isAvailable = available === 'true' || available === true || available === undefined;
+
     const book = await prisma.book.create({
-      data: { title, author, isbn, rfidUid, available: available ?? true },
+      data: { 
+        title, 
+        author, 
+        isbn, 
+        rfidUid, 
+        available: isAvailable,
+        coverImage: coverImagePath
+      },
     });
 
     res.status(201).json(book);
@@ -68,9 +85,24 @@ export const updateBook = async (req, res) => {
   const { title, author, isbn, rfidUid, available } = req.body;
 
   try {
+    const updatedData = {
+      title,
+      author,
+      isbn,
+      rfidUid,
+    };
+
+    if (available !== undefined) {
+      updatedData.available = available === 'true' || available === true;
+    }
+
+    if (req.file) {
+      updatedData.coverImage = '/uploads/' + req.file.filename;
+    }
+
     const book = await prisma.book.update({
       where: { id: Number(id) },
-      data: { title, author, isbn, rfidUid, available },
+      data: updatedData,
     });
 
     res.json(book);
