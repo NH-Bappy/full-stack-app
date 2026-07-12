@@ -48,12 +48,16 @@ export const issueBook = async (req, res) => {
       return trans;
     });
 
-    getIO().emit('bookIssued', {
-      message: 'Book issued successfully',
-      transaction,
-      book,
-      student,
-    });
+    try {
+      getIO().emit('bookIssued', {
+        message: 'Book issued successfully',
+        transaction,
+        book,
+        student,
+      });
+    } catch (socketError) {
+      console.error('Failed to emit bookIssued socket event:', socketError.message);
+    }
 
     res.status(201).json({ message: 'Book issued successfully', transaction });
   } catch (error) {
@@ -103,11 +107,15 @@ export const returnBook = async (req, res) => {
       });
     });
 
-    getIO().emit('bookReturned', {
-      message: 'Book returned successfully',
-      fine,
-      book,
-    });
+    try {
+      getIO().emit('bookReturned', {
+        message: 'Book returned successfully',
+        fine,
+        book,
+      });
+    } catch (socketError) {
+      console.error('Failed to emit bookReturned socket event:', socketError.message);
+    }
 
     res.json({ message: 'Book returned successfully', fine });
   } catch (error) {
