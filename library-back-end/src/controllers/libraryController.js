@@ -126,10 +126,17 @@ export const returnBook = async (req, res) => {
 
 export const getDashboard = async (_req, res) => {
   try {
-    const [totalBooks, issuedBooks, totalStudents] = await Promise.all([
+    const overdueCutoff = new Date(Date.now() - BORROW_LIMIT_DAYS * 24 * 60 * 60 * 1000);
+    const [totalBooks, issuedBooks, totalStudents, overdueBooks] = await Promise.all([
       prisma.book.count(),
       prisma.book.count({ where: { available: false } }),
       prisma.student.count(),
+      prisma.transaction.count({
+        where: {
+          returnDate: null,
+          issueDate: { lt: overdueCutoff },
+        },
+      }),
     ]);
 
     res.json({
@@ -137,6 +144,7 @@ export const getDashboard = async (_req, res) => {
       issuedBooks,
       availableBooks: totalBooks - issuedBooks,
       totalStudents,
+      overdueBooks,
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch dashboard stats', error: error.message });
