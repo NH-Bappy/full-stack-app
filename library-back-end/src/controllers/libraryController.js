@@ -4,14 +4,20 @@ import { getIO } from '../utils/socket.js';
 const FINE_PER_DAY = 10;
 
 export const issueBook = async (req, res) => {
-  const { studentId, bookRfidUid } = req.body;
+  const { studentId, studentRfidUid, bookRfidUid } = req.body;
 
-  if (!studentId || !bookRfidUid) {
-    return res.status(400).json({ message: 'studentId and bookRfidUid are required' });
+  if ((!studentId && !studentRfidUid) || !bookRfidUid) {
+    return res.status(400).json({ message: 'studentId or studentRfidUid, and bookRfidUid are required' });
   }
 
   try {
-    const student = await prisma.student.findUnique({ where: { studentId } });
+    let student = null;
+    if (studentRfidUid) {
+      student = await prisma.student.findUnique({ where: { rfidUid: studentRfidUid } });
+    } else if (studentId) {
+      student = await prisma.student.findUnique({ where: { studentId } });
+    }
+
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
