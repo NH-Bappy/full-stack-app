@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Student {
+  id          Int           @id @default(autoincrement())
+  name        String
+  studentId   String        @unique
+  email       String?
+  rfidUid     String        @unique
+  active      Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  transactions Transaction[]
+}
+
+model Book {
+  id          Int           @id @default(autoincrement())
+  title       String
+  author      String
+  isbn        String?
+  rfidUid     String        @unique
+  available   Boolean       @default(true)
+  active      Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  transactions Transaction[]
+}
+
+model Transaction {
+  id                Int       @id @default(autoincrement())
+  studentId         Int
+  bookId            Int
+  issueDate         DateTime  @default(now())
+  returnDate        DateTime?
+  fine              Float     @default(0)
+  issuedByAdminId   Int?
+  returnedByAdminId Int?
+  student           Student   @relation(fields: [studentId], references: [id])
+  book              Book      @relation(fields: [bookId], references: [id])
+  issuedBy          Admin?    @relation("IssuedByAdmin", fields: [issuedByAdminId], references: [id])
+  returnedBy        Admin?    @relation("ReturnedByAdmin", fields: [returnedByAdminId], references: [id])
+}
+
+model Admin {
+  id                    Int           @id @default(autoincrement())
+  username              String        @unique
+  password              String
+  issuedTransactions    Transaction[] @relation("IssuedByAdmin")
+  returnedTransactions  Transaction[] @relation("ReturnedByAdmin")
+}
