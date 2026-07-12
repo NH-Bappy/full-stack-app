@@ -1,7 +1,8 @@
 import { prisma } from '../config/db.js';
 import { getIO } from '../utils/socket.js';
 
-const FINE_PER_DAY = 10;
+const FINE_PER_DAY = Number(process.env.FINE_PER_DAY) || 10;
+const BORROW_LIMIT_DAYS = Number(process.env.BORROW_LIMIT_DAYS) || 7;
 
 export const issueBook = async (req, res) => {
   const { studentId, studentRfidUid, bookRfidUid } = req.body;
@@ -89,7 +90,7 @@ export const returnBook = async (req, res) => {
 
     const returnDate = new Date();
     const daysBorrowed = Math.max(1, Math.ceil((returnDate - transaction.issueDate) / (1000 * 60 * 60 * 24)));
-    const fine = daysBorrowed > 7 ? (daysBorrowed - 7) * FINE_PER_DAY : 0;
+    const fine = daysBorrowed > BORROW_LIMIT_DAYS ? (daysBorrowed - BORROW_LIMIT_DAYS) * FINE_PER_DAY : 0;
 
     await prisma.$transaction(async (tx) => {
       await tx.transaction.update({
