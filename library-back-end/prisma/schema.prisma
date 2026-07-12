@@ -24,6 +24,7 @@ model Book {
   isbn        String?
   rfidUid     String        @unique
   available   Boolean       @default(true)
+  coverImage  String        @default("")
   active      Boolean       @default(true)
   createdAt   DateTime      @default(now())
   transactions Transaction[]

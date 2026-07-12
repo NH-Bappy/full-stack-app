@@ -1,4 +1,5 @@
 import express from 'express';
+// Reload Prisma client
 import cors from 'cors';
 import { createServer } from 'http';
 import { config } from 'dotenv';
@@ -11,6 +12,7 @@ import bookRoutes from './routes/bookRoutes.js';
 import libraryRoutes from './routes/libraryRoutes.js';
 import demoRoutes from './routes/demoRoutes.js';
 import reportsRoutes from './routes/reportsRoutes.js';
+import { errorHandler } from './middleware/errorMiddleware.js';
 
 config();
 
@@ -20,6 +22,7 @@ initSocket(server);
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
@@ -31,6 +34,8 @@ app.use('/api/books', bookRoutes);
 app.use('/api', libraryRoutes);
 app.use('/api/demo', demoRoutes);
 app.use('/api/reports', reportsRoutes);
+
+app.use(errorHandler);
 
 export { initSocket };
 
