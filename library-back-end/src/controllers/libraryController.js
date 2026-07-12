@@ -150,3 +150,44 @@ export const getDashboard = async (_req, res) => {
     res.status(500).json({ message: 'Failed to fetch dashboard stats', error: error.message });
   }
 };
+
+export const getTransactions = async (_req, res) => {
+  try {
+    const transactions = await prisma.transaction.findMany({
+      include: {
+        student: true,
+        book: true,
+      },
+      orderBy: {
+        issueDate: 'desc',
+      },
+    });
+
+    res.json(transactions);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch transactions', error: error.message });
+  }
+};
+
+export const getOverdueTransactions = async (_req, res) => {
+  try {
+    const overdueCutoff = new Date(Date.now() - BORROW_LIMIT_DAYS * 24 * 60 * 60 * 1000);
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        returnDate: null,
+        issueDate: { lt: overdueCutoff },
+      },
+      include: {
+        student: true,
+        book: true,
+      },
+      orderBy: {
+        issueDate: 'desc',
+      },
+    });
+
+    res.json(transactions);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch overdue transactions', error: error.message });
+  }
+};
