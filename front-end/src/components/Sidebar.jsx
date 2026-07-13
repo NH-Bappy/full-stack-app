@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -45,21 +46,33 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           const isActive = activeTab === item.id;
 
           return (
-            <button
+            <motion.button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer ${
+              whileTap={{ scale: 0.97 }}
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-colors duration-200 cursor-pointer relative ${
                 isActive
-                  ? 'bg-[#0B4627] text-white shadow-lg shadow-[#0B4627]/15'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                  ? 'text-white'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50/50'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-              <span>{item.label}</span>
               {isActive && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                <motion.div
+                  layoutId="activeNavBackground"
+                  className="absolute inset-0 bg-[#0B4627] rounded-xl -z-10 shadow-lg shadow-[#0B4627]/15"
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
               )}
-            </button>
+              <Icon className={`w-4 h-4 z-10 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+              <span className="z-10">{item.label}</span>
+              {isActive && (
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="ml-auto w-1.5 h-1.5 rounded-full bg-white z-10" 
+                />
+              )}
+            </motion.button>
           );
         })}
       </nav>

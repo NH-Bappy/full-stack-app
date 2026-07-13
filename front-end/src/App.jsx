@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from './context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import LoginView from './components/LoginView';
 import DashboardView from './components/DashboardView';
@@ -72,8 +73,19 @@ function App() {
         </header>
 
         {/* View Component container with entrance animation */}
-        <div className="flex-1 pb-12 animate-fade-in-up">
-          {renderActiveView()}
+        <div className="flex-1 pb-12">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.18, ease: "easeInOut" }}
+              className="h-full flex flex-col"
+            >
+              {renderActiveView()}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
     </div>

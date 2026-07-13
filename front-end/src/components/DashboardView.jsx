@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../api/axios';
+import { motion } from 'framer-motion';
 import { 
   BookOpen, 
   CheckCircle2, 
@@ -59,6 +60,21 @@ const DashboardView = ({ setActiveTab }) => {
     { name: 'Overdue', value: stats.overdueBooks, fill: '#00D26A' },
   ] : [];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120, damping: 18 } }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -85,10 +101,18 @@ const DashboardView = ({ setActiveTab }) => {
       ) : (
         <>
           {/* Stats Cards in a 4-column grid (Original Layout) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
             {/* Card 1: Total Books (Deep Forest Green with white dots) */}
-            <div className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-md bg-[#0B4627] text-white border-none dot-pattern-white">
+            <motion.div 
+              variants={cardVariants}
+              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 70, 39, 0.25)" }}
+              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-md bg-[#0B4627] text-white border-none dot-pattern-white cursor-default"
+            >
               <div className="flex items-start justify-between z-10">
                 <div>
                   <span className="text-[10px] font-bold text-[#C2CFC6] uppercase tracking-wider block">
@@ -107,10 +131,14 @@ const DashboardView = ({ setActiveTab }) => {
                 <span className="text-[#C2CFC6] font-medium">Total books in library catalog</span>
                 <Users className="w-3.5 h-3.5 text-[#C2CFC6]" />
               </div>
-            </div>
+            </motion.div>
 
             {/* Card 2: Available Books (White Card with gray dots) */}
-            <div className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray">
+            <motion.div 
+              variants={cardVariants}
+              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 70, 39, 0.08)" }}
+              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-default"
+            >
               <div className="flex items-start justify-between z-10">
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
@@ -129,10 +157,14 @@ const DashboardView = ({ setActiveTab }) => {
                 <span className="text-slate-400 font-medium">Books ready for borrowing</span>
                 <Users className="w-3.5 h-3.5 text-slate-400" />
               </div>
-            </div>
+            </motion.div>
 
             {/* Card 3: Active Borrows (White Card with gray dots) */}
-            <div className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray">
+            <motion.div 
+              variants={cardVariants}
+              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 70, 39, 0.08)" }}
+              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-default"
+            >
               <div className="flex items-start justify-between z-10">
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
@@ -151,10 +183,14 @@ const DashboardView = ({ setActiveTab }) => {
                 <span className="text-slate-400 font-medium">Currently issued out</span>
                 <Users className="w-3.5 h-3.5 text-slate-400" />
               </div>
-            </div>
+            </motion.div>
 
             {/* Card 4: Overdue Books (White Card with gray dots) */}
-            <div className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray">
+            <motion.div 
+              variants={cardVariants}
+              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 70, 39, 0.08)" }}
+              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-default"
+            >
               <div className="flex items-start justify-between z-10">
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
@@ -173,15 +209,22 @@ const DashboardView = ({ setActiveTab }) => {
                 <span className="text-slate-400 font-medium">Returned past standard term</span>
                 <Users className="w-3.5 h-3.5 text-slate-400" />
               </div>
-            </div>
-
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Charts Row: Inventory Ratio (Pie) and Status Overview (Bar) */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+          >
             {/* Pie Chart Card: Inventory Ratio (Sage gradient card) */}
-            <div className="bg-gradient-to-b from-[#C2CFC6] to-[#DFE5E1] border border-white/40 shadow-sm rounded-3xl p-6 flex flex-col">
+            <motion.div 
+              variants={cardVariants}
+              whileHover={{ y: -2 }}
+              className="bg-gradient-to-b from-[#C2CFC6] to-[#DFE5E1] border border-white/40 shadow-sm rounded-3xl p-6 flex flex-col"
+            >
               <h3 className="text-base font-extrabold text-slate-800 mb-1">Inventory Ratio</h3>
               <p className="text-xs text-slate-500 mb-4">Availability status breakdown</p>
               
@@ -239,10 +282,14 @@ const DashboardView = ({ setActiveTab }) => {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
             {/* Bar Chart: Book Summary / Status Overview */}
-            <div className="glass-panel rounded-3xl p-6 flex flex-col lg:col-span-2 bg-white">
+            <motion.div 
+              variants={cardVariants}
+              whileHover={{ y: -2 }}
+              className="glass-panel rounded-3xl p-6 flex flex-col lg:col-span-2 bg-white"
+            >
               <h3 className="text-base font-extrabold text-slate-800 mb-1">Status Overview</h3>
               <p className="text-xs text-slate-500 mb-4">Detailed distribution breakdown of books in catalog</p>
 
@@ -273,12 +320,16 @@ const DashboardView = ({ setActiveTab }) => {
                   </ResponsiveContainer>
                 )}
               </div>
-            </div>
-
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Bottom Table: Overdue Actions */}
-          <div className="glass-panel rounded-3xl p-6 bg-white shadow-sm mt-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, type: "spring", stiffness: 120, damping: 18 }}
+            className="glass-panel rounded-3xl p-6 bg-white shadow-sm mt-6"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5 text-[#0B4627]" />
@@ -343,7 +394,7 @@ const DashboardView = ({ setActiveTab }) => {
                 </table>
               </div>
             )}
-          </div>
+          </motion.div>
         </>
       )}
     </div>
