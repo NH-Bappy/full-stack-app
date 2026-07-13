@@ -22,15 +22,15 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0">
+    <aside className="w-64 bg-white border-r border-[#e2e8f0]/40 flex flex-col h-screen sticky top-0">
       {/* Brand Header */}
-      <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-750 bg-indigo-600 flex items-center justify-center shadow-md shadow-indigo-600/10">
+      <div className="p-6 border-b border-slate-100/60 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-[#0B4627] flex items-center justify-center shadow-md shadow-[#0B4627]/10">
           <BookOpen className="w-5 h-5 text-white" />
         </div>
         <div>
           <span className="font-extrabold text-slate-800 text-lg tracking-tight block leading-none">
-            BIBLIO<span className="text-indigo-600">RFID</span>
+            BIBLIO<span className="text-[#0B4627]">RFID</span>
           </span>
           <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-1 block">
             Admin v1.0
@@ -50,7 +50,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer ${
                 isActive
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/15'
+                  ? 'bg-[#0B4627] text-white shadow-lg shadow-[#0B4627]/15'
                   : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
               }`}
             >
@@ -64,29 +64,45 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         })}
       </nav>
 
-      {/* Admin Profile Details */}
-      <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-        <div className="flex items-center gap-3 mb-4 px-2">
-          <div className="w-9 h-9 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
-            <User className="w-4 h-4" />
+      {/* Bottom section forced to screen bottom */}
+      <div className="mt-auto flex flex-col">
+        {/* Upgrade Pro Card Mockup from reference image */}
+        <div className="mx-4 my-3 p-4 rounded-2xl bg-[#051C10] text-white relative overflow-hidden group">
+          <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-[#0B4627]/30 rounded-full blur-xl group-hover:scale-125 transition-transform" />
+          <div className="w-8 h-8 rounded-lg bg-[#0b4627] flex items-center justify-center mb-3">
+            <BookOpen className="w-4 h-4 text-[#00D26A]" />
           </div>
-          <div className="overflow-hidden">
-            <span className="block text-sm font-bold text-slate-700 truncate">
-              {admin?.username || 'Admin User'}
-            </span>
-            <span className="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-              System Administrator
-            </span>
-          </div>
+          <h4 className="text-xs font-bold text-white mb-1">Upgrade Pro</h4>
+          <p className="text-[10px] text-slate-400 mb-3 leading-relaxed">Discover the benefit of an upgraded account</p>
+          <button className="w-full py-2 bg-[#0B4627] hover:bg-[#07351d] text-[#00D26A] hover:text-white text-[11px] font-bold rounded-xl transition-all duration-200 border border-white/5 cursor-pointer">
+            Upgrade $580
+          </button>
         </div>
 
-        <button
-          onClick={logout}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 hover:border-indigo-600/35 hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 text-sm font-bold transition-all duration-200 cursor-pointer"
-        >
-          <LogOut className="w-4 h-4" />
-          <span>Sign Out</span>
-        </button>
+        {/* Admin Profile Details */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+          <div className="flex items-center gap-3 mb-4 px-2">
+            <div className="w-9 h-9 rounded-lg bg-[#0B4627]/10 border border-[#0B4627]/15 flex items-center justify-center text-[#0B4627]">
+              <User className="w-4 h-4" />
+            </div>
+            <div className="overflow-hidden">
+              <span className="block text-sm font-bold text-slate-700 truncate">
+                {admin?.username || 'Admin User'}
+              </span>
+              <span className="block text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                System Administrator
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={logout}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 hover:border-[#0B4627]/30 hover:bg-[#0B4627]/5 text-slate-500 hover:text-[#0B4627] text-sm font-bold transition-all duration-200 cursor-pointer"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Sign Out</span>
+          </button>
+        </div>
       </div>
     </aside>
   );
