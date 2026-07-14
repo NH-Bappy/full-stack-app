@@ -1,0 +1,13 @@
+# PlatformIO build files
+.pio/
+.clang_complete
+.gcc-flags.json
+
+# Local Wokwi Gateway binary
+wokwigw
+wokwigw.zip
+wokwigw-linux
+wokwigw-linux_arm64
+
+# Local editor configurations
+.vscode/
