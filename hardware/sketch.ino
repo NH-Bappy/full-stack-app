@@ -4,6 +4,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 
 // MFRC522 Pins
@@ -163,8 +164,11 @@ void loop() {
 
   // Send UID to Backend
   if (WiFi.status() == WL_CONNECTED) {
+    WiFiClientSecure client;
+    client.setInsecure(); // Disable SSL certificate validation for development tunnel
+
     HTTPClient http;
-    http.begin(backendUrl);
+    http.begin(client, backendUrl);
     http.addHeader("Content-Type", "application/json");
 
     JsonDocument doc;
