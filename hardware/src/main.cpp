@@ -8,8 +8,8 @@
 #include <ArduinoJson.h>
 
 // MFRC522 Pins
-#define RST_PIN   5
-#define SS_PIN    15
+#define RST_PIN   15
+#define SS_PIN    5
 
 // Hardware Pins
 #define BUZZER_PIN 13
