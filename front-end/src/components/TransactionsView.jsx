@@ -88,6 +88,21 @@ const TransactionsView = () => {
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
     });
 
+    socket.on('rfidScan', (data) => {
+      if (data.type === 'student') {
+        setStudentRfid(data.rfidUid);
+        addSocketLog(`[HARDWARE] Student Scanned: ${data.student.name} (RFID: ${data.rfidUid})`);
+        setMessage({ type: 'success', text: `Hardware scanned Student: ${data.student.name}` });
+      } else if (data.type === 'book') {
+        setBookRfid(data.rfidUid);
+        addSocketLog(`[HARDWARE] Book Scanned: "${data.book.title}" (RFID: ${data.rfidUid})`);
+        setMessage({ type: 'success', text: `Hardware scanned Book: "${data.book.title}"` });
+      } else {
+        addSocketLog(`[HARDWARE] Unknown Card Scanned: ${data.rfidUid}`);
+        setMessage({ type: 'warning', text: `Hardware scanned unknown card: ${data.rfidUid}` });
+      }
+    });
+
     socket.on('disconnect', () => {
       addSocketLog('System disconnected from RFID sensor hub.');
     });
