@@ -21,7 +21,7 @@ const char* ssid = "Wokwi-GUEST";
 const char* password = "";
 
 // Backend API Endpoint
-const char* backendUrl = "https://aa5ecb621d1b6dfc-103-72-212-211.serveousercontent.com/api/rfid/scan";
+const char* backendUrl = "https://6eab6a63176ab892-103-72-212-211.serveousercontent.com/api/rfid/scan";
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
