@@ -191,3 +191,57 @@ export const getOverdueTransactions = async (_req, res) => {
     res.status(500).json({ message: 'Failed to fetch overdue transactions', error: error.message });
   }
 };
+
+export const scanRfid = async (req, res) => {
+  const { rfidUid } = req.body;
+
+  if (!rfidUid) {
+    return res.status(400).json({ message: 'rfidUid is required' });
+  }
+
+  try {
+    // 1. Try to find the UID in Student
+    const student = await prisma.student.findUnique({ where: { rfidUid } });
+    if (student) {
+      try {
+        getIO().emit('rfidScan', {
+          rfidUid,
+          type: 'student',
+          student,
+        });
+      } catch (socketError) {
+        console.error('Failed to emit rfidScan socket event for student:', socketError.message);
+      }
+      return res.status(200).json({ message: 'Student RFID scanned successfully', rfidUid, type: 'student', student });
+    }
+
+    // 2. Try to find the UID in Book
+    const book = await prisma.book.findUnique({ where: { rfidUid } });
+    if (book) {
+      try {
+        getIO().emit('rfidScan', {
+          rfidUid,
+          type: 'book',
+          book,
+        });
+      } catch (socketError) {
+        console.error('Failed to emit rfidScan socket event for book:', socketError.message);
+      }
+      return res.status(200).json({ message: 'Book RFID scanned successfully', rfidUid, type: 'book', book });
+    }
+
+    // 3. Not found in either
+    try {
+      getIO().emit('rfidScan', {
+        rfidUid,
+        type: 'unknown',
+      });
+    } catch (socketError) {
+      console.error('Failed to emit rfidScan socket event for unknown card:', socketError.message);
+    }
+    return res.status(200).json({ message: 'Unknown RFID scanned', rfidUid, type: 'unknown' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to process RFID scan', error: error.message });
+  }
+};
+
