@@ -28,8 +28,37 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 void setup() {
   Serial.begin(115200);
+  delay(1000); // Give serial monitor time to connect
+  Serial.println("\n--- Hardware Simulation Diagnostics ---");
+
+  // Initialize I2C and Scan
+  Wire.begin(21, 22);
+  Serial.println("Scanning I2C bus...");
+  int nDevices = 0;
+  for (byte address = 1; address < 127; address++) {
+    Wire.beginTransmission(address);
+    byte error = Wire.endTransmission();
+    if (error == 0) {
+      Serial.printf("  I2C device found at address 0x%02X\n", address);
+      nDevices++;
+    }
+  }
+  if (nDevices == 0) {
+    Serial.println("  No I2C devices found (Check LCD SDA/SCL wiring!)");
+  }
+
+  // Initialize SPI & MFRC522 and Scan
   SPI.begin();
   mfrc522.PCD_Init();
+  Serial.println("Checking MFRC522 connection...");
+  byte mfrcVersion = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
+  Serial.printf("  MFRC522 Version Register: 0x%02X\n", mfrcVersion);
+  if (mfrcVersion == 0x00 || mfrcVersion == 0xFF) {
+    Serial.println("  WARNING: Communication with MFRC522 failed (Check SPI wiring!)");
+  } else {
+    Serial.println("  MFRC522 Connection: OK!");
+  }
+  Serial.println("---------------------------------------\n");
   
   lcd.init();
   lcd.backlight();
