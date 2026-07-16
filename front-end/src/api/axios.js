@@ -23,4 +23,18 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor to handle unauthorized errors (stale/expired tokens)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('library_admin_token');
+      localStorage.removeItem('library_admin');
+      // Force reload to reset application state and trigger redirect to LoginView
+      window.location.reload();
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

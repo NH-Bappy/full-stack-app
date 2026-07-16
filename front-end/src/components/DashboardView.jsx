@@ -27,21 +27,40 @@ import {
 
 const DashboardView = ({ setActiveTab }) => {
   // Fetch overall statistics
-  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
+  const { 
+    data: stats, 
+    isLoading: statsLoading, 
+    error: statsError, 
+    refetch: refetchStats 
+  } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: async () => {
-      const response = await api.get('/dashboard');
-      return response.data;
+      try {
+        const response = await api.get('/dashboard');
+        return response.data;
+      } catch (err) {
+        console.error('Failed to fetch dashboard statistics:', err);
+        throw err;
+      }
     },
     refetchInterval: 10000, // Refetch every 10 seconds to keep live
   });
 
   // Fetch overdue transactions
-  const { data: overdueData, isLoading: overdueLoading } = useQuery({
+  const { 
+    data: overdueData, 
+    isLoading: overdueLoading, 
+    error: overdueError 
+  } = useQuery({
     queryKey: ['overdueTransactions'],
     queryFn: async () => {
-      const response = await api.get('/transactions/overdue');
-      return response.data;
+      try {
+        const response = await api.get('/transactions/overdue');
+        return response.data;
+      } catch (err) {
+        console.error('Failed to fetch overdue transactions:', err);
+        throw err;
+      }
     },
   });
 
@@ -91,6 +110,19 @@ const DashboardView = ({ setActiveTab }) => {
           <span>Refresh Stats</span>
         </button>
       </div>
+
+      {/* Error display if query fails */}
+      {(statsError || overdueError) && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-3xl text-sm flex items-center gap-3 animate-fade-in-up">
+          <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+          <div>
+            <strong className="font-bold block text-slate-800">Connection or Session Error</strong>
+            <span className="text-xs text-red-600 block mt-0.5">
+              {statsError?.response?.data?.message || statsError?.message || overdueError?.response?.data?.message || overdueError?.message}
+            </span>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
