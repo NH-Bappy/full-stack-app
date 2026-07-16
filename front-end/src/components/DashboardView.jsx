@@ -143,7 +143,7 @@ const DashboardView = ({ setActiveTab }) => {
             <motion.div 
               variants={cardVariants}
               whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.25)" }}
-              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-md bg-[#0B4262] text-white border-none dot-pattern-white cursor-default"
+              className="rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-md bg-[#0B4262] text-white dot-pattern-white cursor-default"
             >
               <div className="flex items-start justify-between z-10">
                 <div>
