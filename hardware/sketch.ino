@@ -21,7 +21,7 @@ const char* password = "";
 
 // Backend API Endpoint
 // IMPORTANT: Replace "YOUR_LOCAL_IP" with your actual computer's local IP address (e.g., 192.168.1.10)
-const char* backendUrl = "https://6eab6a63176ab892-103-72-212-211.serveousercontent.com/api/rfid/scan";
+const char* backendUrl = "http://0eafd02e6c38c121-103-72-212-211.serveousercontent.com/api/rfid/scan";
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
