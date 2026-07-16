@@ -47,17 +47,17 @@ const DashboardView = ({ setActiveTab }) => {
 
   const isLoading = statsLoading || overdueLoading;
 
-  // Formatting chart data matching the premium Forest Green & Lime palette
+  // Formatting chart data matching the premium Deep Blue & Sky Blue palette
   const pieData = stats ? [
-    { name: 'Available Books', value: stats.availableBooks, color: '#0B4627' }, // Forest Green
-    { name: 'Issued Books', value: stats.issuedBooks, color: '#00D26A' },       // Vibrant Lime
+    { name: 'Available Books', value: stats.availableBooks, color: '#0B4262' }, // Deep Blue
+    { name: 'Issued Books', value: stats.issuedBooks, color: '#00A2E8' },       // Sky Blue
   ] : [];
 
   const barData = stats ? [
-    { name: 'Total Books', value: stats.totalBooks, fill: '#0B4627' },
-    { name: 'Available', value: stats.availableBooks, fill: '#00D26A' },
-    { name: 'Issued', value: stats.issuedBooks, fill: '#0B4627' },
-    { name: 'Overdue', value: stats.overdueBooks, fill: '#00D26A' },
+    { name: 'Total Books', value: stats.totalBooks, fill: '#0B4262' },
+    { name: 'Available', value: stats.availableBooks, fill: '#00A2E8' },
+    { name: 'Issued', value: stats.issuedBooks, fill: '#0B4262' },
+    { name: 'Overdue', value: stats.overdueBooks, fill: '#00A2E8' },
   ] : [];
 
   const containerVariants = {
@@ -85,7 +85,7 @@ const DashboardView = ({ setActiveTab }) => {
         </div>
         <button
           onClick={() => refetchStats()}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[#0B4627] hover:text-[#07351d] hover:border-[#0B4627]/30 hover:bg-slate-50 transition-all text-xs font-semibold cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[#0B4262] hover:text-[#08324a] hover:border-[#0B4262]/30 hover:bg-slate-50 transition-all text-xs font-semibold cursor-pointer"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Refresh Stats</span>
@@ -110,12 +110,12 @@ const DashboardView = ({ setActiveTab }) => {
             {/* Card 1: Total Books (Deep Forest Green with white dots) */}
             <motion.div 
               variants={cardVariants}
-              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 70, 39, 0.25)" }}
-              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-md bg-[#0B4627] text-white border-none dot-pattern-white cursor-default"
+              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.25)" }}
+              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-md bg-[#0B4262] text-white border-none dot-pattern-white cursor-default"
             >
               <div className="flex items-start justify-between z-10">
                 <div>
-                  <span className="text-[10px] font-bold text-[#C2CFC6] uppercase tracking-wider block">
+                  <span className="text-[10px] font-bold text-[#c2ccd1] uppercase tracking-wider block">
                     Total Books
                   </span>
                   <span className="text-3xl font-black text-white tracking-tight mt-1.5 block">
@@ -123,20 +123,20 @@ const DashboardView = ({ setActiveTab }) => {
                   </span>
                 </div>
                 <div className="p-3 rounded-xl bg-white/10 text-white backdrop-blur-md">
-                  <BookOpen className="w-5 h-5 text-[#00D26A]" />
+                  <BookOpen className="w-5 h-5 text-[#00A2E8]" />
                 </div>
               </div>
 
               <div className="border-t border-white/10 pt-3 mt-4 flex items-center justify-between text-xs z-10">
-                <span className="text-[#C2CFC6] font-medium">Total books in library catalog</span>
-                <Users className="w-3.5 h-3.5 text-[#C2CFC6]" />
+                <span className="text-[#c2ccd1] font-medium">Total books in library catalog</span>
+                <Users className="w-3.5 h-3.5 text-[#c2ccd1]" />
               </div>
             </motion.div>
 
             {/* Card 2: Available Books (White Card with gray dots) */}
             <motion.div 
               variants={cardVariants}
-              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 70, 39, 0.08)" }}
+              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.08)" }}
               className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-default"
             >
               <div className="flex items-start justify-between z-10">
@@ -144,12 +144,12 @@ const DashboardView = ({ setActiveTab }) => {
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                     Available Books
                   </span>
-                  <span className="text-3xl font-black text-[#0B4627] tracking-tight mt-1.5 block">
+                  <span className="text-3xl font-black text-[#0B4262] tracking-tight mt-1.5 block">
                     {stats ? stats.availableBooks.toLocaleString() : '0'}
                   </span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 text-slate-500">
-                  <CheckCircle2 className="w-5 h-5 text-[#0B4627]" />
+                  <CheckCircle2 className="w-5 h-5 text-[#0B4262]" />
                 </div>
               </div>
 
@@ -162,7 +162,7 @@ const DashboardView = ({ setActiveTab }) => {
             {/* Card 3: Active Borrows (White Card with gray dots) */}
             <motion.div 
               variants={cardVariants}
-              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 70, 39, 0.08)" }}
+              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.08)" }}
               className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-default"
             >
               <div className="flex items-start justify-between z-10">
@@ -188,7 +188,7 @@ const DashboardView = ({ setActiveTab }) => {
             {/* Card 4: Overdue Books (White Card with gray dots) */}
             <motion.div 
               variants={cardVariants}
-              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 70, 39, 0.08)" }}
+              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.08)" }}
               className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-default"
             >
               <div className="flex items-start justify-between z-10">
@@ -250,7 +250,7 @@ const DashboardView = ({ setActiveTab }) => {
                       <Tooltip 
                         contentStyle={{ 
                           backgroundColor: '#ffffff', 
-                          borderColor: 'rgba(11, 70, 39, 0.1)',
+                          borderColor: 'rgba(11, 66, 98, 0.1)',
                           borderRadius: '12px',
                           color: '#0f172a'
                         }} 
@@ -299,14 +299,14 @@ const DashboardView = ({ setActiveTab }) => {
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(11, 70, 39, 0.04)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(11, 66, 98, 0.04)" />
                       <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
                       <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
                       <Tooltip 
-                        cursor={{ fill: 'rgba(11, 70, 39, 0.01)' }}
+                        cursor={{ fill: 'rgba(11, 66, 98, 0.01)' }}
                         contentStyle={{ 
                           backgroundColor: '#ffffff', 
-                          borderColor: 'rgba(11, 70, 39, 0.1)',
+                          borderColor: 'rgba(11, 66, 98, 0.1)',
                           borderRadius: '12px',
                           color: '#0f172a'
                         }} 
@@ -332,12 +332,12 @@ const DashboardView = ({ setActiveTab }) => {
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-[#0B4627]" />
+                <Clock className="w-5 h-5 text-[#0B4262]" />
                 <h3 className="text-base font-extrabold text-slate-800">Overdue Borrow Operations</h3>
               </div>
               <button 
                 onClick={() => setActiveTab('transactions')}
-                className="text-xs font-semibold text-[#0B4627] hover:text-[#07351d] flex items-center gap-1 hover:underline cursor-pointer"
+                className="text-xs font-semibold text-[#0B4262] hover:text-[#08324a] flex items-center gap-1 hover:underline cursor-pointer"
               >
                 <span>Manage Transactions</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -384,7 +384,7 @@ const DashboardView = ({ setActiveTab }) => {
                               year: 'numeric' 
                             })}
                           </td>
-                          <td className="py-3 px-4 text-right font-black text-xs text-[#0B4627]">
+                          <td className="py-3 px-4 text-right font-black text-xs text-[#0B4262]">
                             ৳{estimatedFine}
                           </td>
                         </tr>

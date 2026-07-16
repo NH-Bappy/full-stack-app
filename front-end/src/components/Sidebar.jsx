@@ -32,9 +32,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         </div>
         <div>
           <span className="font-extrabold text-slate-800 text-[13px] tracking-tight block leading-none">
-            GGAI <span className="text-[#0B4627]">RFID</span>
+            GGAI <span className="text-[#0B4262]">RFID</span>
           </span>
-          <span className="text-[9px] text-[#0B4627] uppercase tracking-wider font-bold mt-1 block">
+          <span className="text-[9px] text-[#0B4262] uppercase tracking-wider font-bold mt-1 block">
             Graphic Arts Inst.
           </span>
         </div>
@@ -60,7 +60,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               {isActive && (
                 <motion.div
                   layoutId="activeNavBackground"
-                  className="absolute inset-0 bg-[#0B4627] rounded-xl -z-10 shadow-lg shadow-[#0B4627]/15"
+                  className="absolute inset-0 bg-[#0B4262] rounded-xl -z-10 shadow-lg shadow-[#0B4262]/15"
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
               )}
@@ -84,7 +84,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         {/* Admin Profile Details */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3 mb-4 px-2">
-            <div className="w-9 h-9 rounded-lg bg-[#0B4627]/10 border border-[#0B4627]/15 flex items-center justify-center text-[#0B4627]">
+            <div className="w-9 h-9 rounded-lg bg-[#0B4262]/10 border border-[#0B4262]/15 flex items-center justify-center text-[#0B4262]">
               <User className="w-4 h-4" />
             </div>
             <div className="overflow-hidden">
@@ -99,7 +99,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
           <button
             onClick={logout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 hover:border-[#0B4627]/30 hover:bg-[#0B4627]/5 text-slate-500 hover:text-[#0B4627] text-sm font-bold transition-all duration-200 cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 hover:border-[#0B4262]/30 hover:bg-[#0B4262]/5 text-slate-500 hover:text-[#0B4262] text-sm font-bold transition-all duration-200 cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
             <span>Sign Out</span>

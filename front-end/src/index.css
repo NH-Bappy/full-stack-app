@@ -8,17 +8,17 @@
   --animate-pulse-subtle: pulse-subtle 2s infinite ease-in-out;
   --animate-float: float 3s ease-in-out infinite;
 
-  /* Overriding Indigo color palette to Forest Green palette for system-wide thematic harmony */
-  --color-indigo-50: #f0fdf4;
-  --color-indigo-100: #dcfce7;
-  --color-indigo-200: #bbf7d0;
-  --color-indigo-300: #86efac;
-  --color-indigo-400: #4ade80;
-  --color-indigo-500: #00D26A; /* Vibrant Green */
-  --color-indigo-600: #0B4627; /* Deep Forest Green */
-  --color-indigo-700: #07351d; /* Dark Forest Green */
-  --color-indigo-800: #052414;
-  --color-indigo-900: #021a0d;
+  /* Overriding Indigo color palette to Blue/Cyan palette for system-wide thematic harmony matching GGAI Logo */
+  --color-indigo-50: #f0f9ff;
+  --color-indigo-100: #e0f2fe;
+  --color-indigo-200: #bae6fd;
+  --color-indigo-300: #7dd3fc;
+  --color-indigo-400: #38bdf8;
+  --color-indigo-500: #00A2E8; /* Vibrant Sky Blue / Cyan (Matches Logo Gear) */
+  --color-indigo-600: #0B4262; /* Deep Blue */
+  --color-indigo-700: #08324a; /* Dark Deep Blue */
+  --color-indigo-800: #062334;
+  --color-indigo-900: #041621;
 
   @keyframes fade-in-up {
     from {
@@ -59,11 +59,11 @@
   background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(11, 70, 39, 0.2);
+  background: rgba(11, 66, 98, 0.2);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(11, 70, 39, 0.4);
+  background: rgba(11, 66, 98, 0.4);
 }
 
 html, body, #root {
@@ -82,7 +82,7 @@ body {
 /* Premium Card Panels */
 .glass-panel {
   background: #ffffff;
-  border: 1px solid rgba(11, 70, 39, 0.06);
+  border: 1px solid rgba(11, 66, 98, 0.06);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
 }
 
@@ -91,8 +91,8 @@ body {
 }
 .glass-panel-hover:hover {
   background: #ffffff;
-  border-color: rgba(11, 70, 39, 0.2);
-  box-shadow: 0 12px 24px -10px rgba(11, 70, 39, 0.08);
+  border-color: rgba(11, 66, 98, 0.2);
+  box-shadow: 0 12px 24px -10px rgba(11, 66, 98, 0.08);
   transform: translateY(-2px);
 }
 
@@ -103,7 +103,7 @@ body {
 }
 
 .dot-pattern-gray {
-  background-image: radial-gradient(circle, rgba(11, 70, 39, 0.05) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(11, 66, 98, 0.05) 1px, transparent 1px);
   background-size: 12px 12px;
 }
 
@@ -118,8 +118,8 @@ body {
   color: #94a3b8;
 }
 .glass-input:focus {
-  border-color: #0B4627;
-  box-shadow: 0 0 0 2px rgba(11, 70, 39, 0.1);
+  border-color: #0B4262;
+  box-shadow: 0 0 0 2px rgba(11, 66, 98, 0.1);
   outline: none;
   background: #ffffff;
 }
