@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import logo from '../assets/logo.png';
 import { KeyRound, User, Lock, ArrowRight, ShieldAlert, Sparkles, BookOpen } from 'lucide-react';
 
 const LoginView = () => {
@@ -54,13 +55,13 @@ const LoginView = () => {
       <div className="w-full max-w-md animate-fade-in-up">
         {/* Logo and Brand */}
         <div className="flex flex-col items-center mb-8 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-indigo-500/20 mb-3 animate-float">
-            <BookOpen className="w-8 h-8 text-white" />
+          <div className="w-20 h-20 flex items-center justify-center mb-3 animate-float">
+            <img src={logo} alt="GGAI Logo" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-1">
-            BIBLIO<span className="text-indigo-650 text-indigo-600">RFID</span>
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 mb-1">
+            GGAI <span className="text-indigo-650 text-indigo-600">RFID</span>
           </h1>
-          <p className="text-slate-500 text-sm">Library RFID Management Terminal</p>
+          <p className="text-slate-500 text-sm">Govt. Graphic Arts Institute RFID Terminal</p>
         </div>
 
         {/* Auth Panel */}

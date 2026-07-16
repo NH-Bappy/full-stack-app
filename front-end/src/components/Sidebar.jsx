@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
+import logo from '../assets/logo.png';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -25,16 +26,16 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   return (
     <aside className="w-64 bg-white border-r border-[#e2e8f0]/40 flex flex-col h-screen sticky top-0">
       {/* Brand Header */}
-      <div className="p-6 border-b border-slate-100/60 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-[#0B4627] flex items-center justify-center shadow-md shadow-[#0B4627]/10">
-          <BookOpen className="w-5 h-5 text-white" />
+      <div className="p-5 border-b border-slate-100/60 flex items-center gap-3">
+        <div className="w-11 h-11 flex-shrink-0 flex items-center justify-center">
+          <img src={logo} alt="GGAI Logo" className="w-full h-full object-contain" />
         </div>
         <div>
-          <span className="font-extrabold text-slate-800 text-lg tracking-tight block leading-none">
-            BIBLIO<span className="text-[#0B4627]">RFID</span>
+          <span className="font-extrabold text-slate-800 text-[13px] tracking-tight block leading-none">
+            GGAI <span className="text-[#0B4627]">RFID</span>
           </span>
-          <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-1 block">
-            Admin v1.0
+          <span className="text-[9px] text-[#0B4627] uppercase tracking-wider font-bold mt-1 block">
+            Graphic Arts Inst.
           </span>
         </div>
       </div>
