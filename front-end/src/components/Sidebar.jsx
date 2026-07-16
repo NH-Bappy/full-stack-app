@@ -79,18 +79,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
       {/* Bottom section forced to screen bottom */}
       <div className="mt-auto flex flex-col">
-        {/* Upgrade Pro Card Mockup from reference image */}
-        <div className="mx-4 my-3 p-4 rounded-2xl bg-[#051C10] text-white relative overflow-hidden group">
-          <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-[#0B4627]/30 rounded-full blur-xl group-hover:scale-125 transition-transform" />
-          <div className="w-8 h-8 rounded-lg bg-[#0b4627] flex items-center justify-center mb-3">
-            <BookOpen className="w-4 h-4 text-[#00D26A]" />
-          </div>
-          <h4 className="text-xs font-bold text-white mb-1">Upgrade Pro</h4>
-          <p className="text-[10px] text-slate-400 mb-3 leading-relaxed">Discover the benefit of an upgraded account</p>
-          <button className="w-full py-2 bg-[#0B4627] hover:bg-[#07351d] text-[#00D26A] hover:text-white text-[11px] font-bold rounded-xl transition-all duration-200 border border-white/5 cursor-pointer">
-            Upgrade $580
-          </button>
-        </div>
 
         {/* Admin Profile Details */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/50">

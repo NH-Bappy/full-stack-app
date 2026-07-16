@@ -1,4 +1,0 @@
-[wokwi]
-version = 1
-firmware = 'hardware/.pio/build/esp32dev/firmware.bin'
-elf = 'hardware/.pio/build/esp32dev/firmware.elf'
