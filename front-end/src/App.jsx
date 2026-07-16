@@ -12,6 +12,18 @@ import ReportsView from './components/ReportsView';
 function App() {
   const { admin, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [booksFilter, setBooksFilter] = useState('all');
+  const [transactionsFilter, setTransactionsFilter] = useState(false);
+
+  const navigateToView = (tab, filterVal) => {
+    setActiveTab(tab);
+    if (tab === 'books' && filterVal) {
+      setBooksFilter(filterVal);
+    }
+    if (tab === 'transactions' && filterVal !== undefined) {
+      setTransactionsFilter(filterVal);
+    }
+  };
 
   if (loading) {
     return (
@@ -31,17 +43,17 @@ function App() {
   const renderActiveView = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <DashboardView setActiveTab={setActiveTab} />;
+        return <DashboardView setActiveTab={setActiveTab} navigateToView={navigateToView} />;
       case 'books':
-        return <BooksView />;
+        return <BooksView initialFilter={booksFilter} setInitialFilter={setBooksFilter} />;
       case 'students':
         return <StudentsView />;
       case 'transactions':
-        return <TransactionsView />;
+        return <TransactionsView initialShowOverdue={transactionsFilter} setInitialShowOverdue={setTransactionsFilter} />;
       case 'reports':
         return <ReportsView />;
       default:
-        return <DashboardView setActiveTab={setActiveTab} />;
+        return <DashboardView setActiveTab={setActiveTab} navigateToView={navigateToView} />;
     }
   };
 

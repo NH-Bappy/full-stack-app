@@ -16,10 +16,22 @@ import {
   FileText
 } from 'lucide-react';
 
-const BooksView = () => {
+const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all'); // all, available, issued
+  const [filterStatus, setFilterStatus] = useState(initialFilter);
+
+  // Sync local filter status when initialFilter prop changes
+  React.useEffect(() => {
+    setFilterStatus(initialFilter);
+  }, [initialFilter]);
+
+  const handleFilterChange = (status) => {
+    setFilterStatus(status);
+    if (setInitialFilter) {
+      setInitialFilter(status);
+    }
+  };
   
   // Modals state
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -246,7 +258,7 @@ const BooksView = () => {
           {['all', 'available', 'issued'].map((status) => (
             <button
               key={status}
-              onClick={() => setFilterStatus(status)}
+              onClick={() => handleFilterChange(status)}
               className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize transition-all cursor-pointer border ${
                 filterStatus === status
                   ? 'bg-white border-indigo-600 text-indigo-600 shadow-sm'

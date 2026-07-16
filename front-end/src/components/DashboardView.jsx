@@ -25,7 +25,7 @@ import {
   CartesianGrid 
 } from 'recharts';
 
-const DashboardView = ({ setActiveTab }) => {
+const DashboardView = ({ setActiveTab, navigateToView }) => {
   // Fetch overall statistics
   const { 
     data: stats, 
@@ -143,7 +143,8 @@ const DashboardView = ({ setActiveTab }) => {
             <motion.div 
               variants={cardVariants}
               whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.25)" }}
-              className="rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-md bg-[#0B4262] text-white dot-pattern-white cursor-default"
+              className="rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-md bg-[#0B4262] text-white dot-pattern-white cursor-pointer hover:shadow-lg transition-all duration-300"
+              onClick={() => navigateToView && navigateToView('books', 'all')}
             >
               <div className="flex items-start justify-between z-10">
                 <div>
@@ -169,7 +170,8 @@ const DashboardView = ({ setActiveTab }) => {
             <motion.div 
               variants={cardVariants}
               whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.08)" }}
-              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-default"
+              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-pointer hover:shadow-md transition-all duration-300"
+              onClick={() => navigateToView && navigateToView('books', 'available')}
             >
               <div className="flex items-start justify-between z-10">
                 <div>
@@ -195,7 +197,8 @@ const DashboardView = ({ setActiveTab }) => {
             <motion.div 
               variants={cardVariants}
               whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.08)" }}
-              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-default"
+              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-pointer hover:shadow-md transition-all duration-300"
+              onClick={() => navigateToView && navigateToView('books', 'issued')}
             >
               <div className="flex items-start justify-between z-10">
                 <div>
@@ -221,7 +224,8 @@ const DashboardView = ({ setActiveTab }) => {
             <motion.div 
               variants={cardVariants}
               whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.08)" }}
-              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-default"
+              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-pointer hover:shadow-md transition-all duration-300"
+              onClick={() => navigateToView && navigateToView('transactions', true)}
             >
               <div className="flex items-start justify-between z-10">
                 <div>

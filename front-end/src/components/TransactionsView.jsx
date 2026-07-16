@@ -17,12 +17,25 @@ import {
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 
-const TransactionsView = () => {
+const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue }) => {
   const queryClient = useQueryClient();
   
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState('');
-  const [showOnlyOverdue, setShowOnlyOverdue] = useState(false);
+  const [showOnlyOverdue, setShowOnlyOverdue] = useState(initialShowOverdue);
+
+  // Sync local showOnlyOverdue state with initialShowOverdue prop changes
+  useEffect(() => {
+    setShowOnlyOverdue(initialShowOverdue);
+  }, [initialShowOverdue]);
+
+  const toggleShowOverdue = () => {
+    const nextVal = !showOnlyOverdue;
+    setShowOnlyOverdue(nextVal);
+    if (setInitialShowOverdue) {
+      setInitialShowOverdue(nextVal);
+    }
+  };
 
   // Operation state
   const [mode, setMode] = useState('issue'); // issue, return
@@ -448,7 +461,7 @@ const TransactionsView = () => {
 
               <button
                 type="button"
-                onClick={() => setShowOnlyOverdue(!showOnlyOverdue)}
+                onClick={toggleShowOverdue}
                 className={`py-2 px-3 rounded-xl text-xs font-bold cursor-pointer border flex items-center justify-center gap-1.5 transition-all ${
                   showOnlyOverdue
                     ? 'bg-indigo-50 border-indigo-500/35 text-indigo-600'
