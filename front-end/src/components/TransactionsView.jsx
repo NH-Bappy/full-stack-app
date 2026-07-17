@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
 import { 
@@ -43,6 +43,21 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   const [studentRfid, setStudentRfid] = useState('');
   const [bookRfid, setBookRfid] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
+
+  // Refs to avoid stale closures in WebSocket event listeners
+  const studentRfidRef = useRef(studentRfid);
+  const studentIdRef = useRef(studentId);
+  const issueMutationRef = useRef(null);
+  const returnMutationRef = useRef(null);
+
+  // Synchronize state values to refs
+  useEffect(() => {
+    studentRfidRef.current = studentRfid;
+  }, [studentRfid]);
+
+  useEffect(() => {
+    studentIdRef.current = studentId;
+  }, [studentId]);
 
   // RFID Simulator State
   const [selectedSimStudent, setSelectedSimStudent] = useState('');
@@ -104,12 +119,42 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
     socket.on('rfidScan', (data) => {
       if (data.type === 'student') {
         setStudentRfid(data.rfidUid);
+        setStudentId(data.student.studentId); // Auto-fill Student ID from database
         addSocketLog(`[HARDWARE] Student Scanned: ${data.student.name} (RFID: ${data.rfidUid})`);
         setMessage({ type: 'success', text: `Hardware scanned Student: ${data.student.name}` });
       } else if (data.type === 'book') {
         setBookRfid(data.rfidUid);
         addSocketLog(`[HARDWARE] Book Scanned: "${data.book.title}" (RFID: ${data.rfidUid})`);
-        setMessage({ type: 'success', text: `Hardware scanned Book: "${data.book.title}"` });
+        
+        // Auto-run action logic based on book availability
+        const currentStudentRfid = studentRfidRef.current;
+        const currentStudentId = studentIdRef.current;
+        const isAvailable = data.book.available; // true = in library, false = checked out
+
+        if (!isAvailable) {
+          // Automatically return the book since it is checked out
+          setMessage({ type: 'success', text: `Auto-returning book: "${data.book.title}"...` });
+          if (returnMutationRef.current) {
+            returnMutationRef.current.mutate({ bookRfidUid: data.rfidUid });
+          }
+        } else {
+          // Book is available, try to issue it
+          if (currentStudentRfid || currentStudentId) {
+            setMessage({ type: 'success', text: `Auto-issuing "${data.book.title}"...` });
+            if (issueMutationRef.current) {
+              issueMutationRef.current.mutate({
+                studentId: currentStudentId || null,
+                studentRfidUid: currentStudentRfid || null,
+                bookRfidUid: data.rfidUid
+              });
+            }
+          } else {
+            setMessage({ 
+              type: 'warning', 
+              text: `Book "${data.book.title}" is available. Scan a student card first to issue it!` 
+            });
+          }
+        }
       } else {
         addSocketLog(`[HARDWARE] Unknown Card Scanned: ${data.rfidUid}`);
         setMessage({ type: 'warning', text: `Hardware scanned unknown card: ${data.rfidUid}` });
@@ -136,7 +181,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
       return response.data;
     },
     onSuccess: (data) => {
-      setMessage({ type: 'success', text: data.message || 'Book issued successfully!' });
+      setMessage({ type: 'success', text: `${data.message || 'Book issued successfully!'} - Confirmed by Administration` });
       setStudentId('');
       setStudentRfid('');
       setBookRfid('');
@@ -149,6 +194,11 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
     }
   });
 
+  // Keep mutation ref updated
+  useEffect(() => {
+    issueMutationRef.current = issueMutation;
+  }, [issueMutation]);
+
   // Return Book Mutation
   const returnMutation = useMutation({
     mutationFn: async (payload) => {
@@ -157,7 +207,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
     },
     onSuccess: (data) => {
       const fineText = data.fine > 0 ? ` Fine due: ৳${data.fine}` : '';
-      setMessage({ type: 'success', text: `${data.message || 'Book returned successfully!'}${fineText}` });
+      setMessage({ type: 'success', text: `${data.message || 'Book returned successfully!'}${fineText} - Confirmed by Administration` });
       setBookRfid('');
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['books'] });
@@ -167,6 +217,11 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
       setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to return book' });
     }
   });
+
+  // Keep mutation ref updated
+  useEffect(() => {
+    returnMutationRef.current = returnMutation;
+  }, [returnMutation]);
 
   const handleIssueSubmit = (e) => {
     e.preventDefault();
@@ -298,27 +353,19 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
                         <input
                           type="text"
                           value={studentId}
-                          onChange={(e) => {
-                            setStudentId(e.target.value);
-                            setStudentRfid('');
-                          }}
-                          placeholder="ID (STU001)"
-                          className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-xs font-semibold"
-                          disabled={issueMutation.isPending || returnMutation.isPending}
+                          placeholder="Student ID (Auto-fill)"
+                          disabled
+                          className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed"
                         />
                       </div>
                       <div className="relative">
-                        <Radio className="absolute inset-y-0 left-3 text-slate-400 w-4 h-4 my-auto" />
+                        <Radio className="absolute inset-y-0 left-3 text-slate-300 w-4 h-4 my-auto" />
                         <input
                           type="text"
                           value={studentRfid}
-                          onChange={(e) => {
-                            setStudentRfid(e.target.value);
-                            setStudentId('');
-                          }}
-                          placeholder="RFID Card UID"
-                          className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-xs font-mono"
-                          disabled={issueMutation.isPending || returnMutation.isPending}
+                          placeholder="Scan Card (Auto-fill)"
+                          disabled
+                          className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-xs font-mono bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed"
                         />
                       </div>
                     </div>
@@ -327,16 +374,15 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
               )}
 
               <div>
-                <label className="block text-slate-500 text-xs font-semibold mb-1.5">Book RFID Tag UID *</label>
+                <label className="block text-slate-400 text-xs font-semibold mb-1.5">Book RFID Tag UID - Scan Only</label>
                 <div className="relative">
-                  <BookOpen className="absolute inset-y-0 left-3 text-slate-400 w-4 h-4 my-auto" />
+                  <BookOpen className="absolute inset-y-0 left-3 text-slate-300 w-4 h-4 my-auto" />
                   <input
                     type="text"
                     value={bookRfid}
-                    onChange={(e) => setBookRfid(e.target.value)}
-                    placeholder="Scan Book Tag (e.g. BOOK001)"
-                    className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-xs font-mono"
-                    disabled={issueMutation.isPending || returnMutation.isPending}
+                    placeholder="Scan Book Tag (Auto-fill)"
+                    disabled
+                    className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-xs font-mono bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed"
                   />
                 </div>
               </div>
