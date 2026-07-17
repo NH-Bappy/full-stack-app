@@ -46,11 +46,9 @@ const upload = multer({
 });
 
 router.get('/', protect, getBooks);
-
-// coverImage file field is mandatory on create, optional on update
-router.post('/', protect, upload.single('coverImage'), createBook);
+router.post('/', protect, createBook);
 router.get('/:id', protect, getBookById);
-router.put('/:id', protect, upload.single('coverImage'), updateBook);
+router.put('/:id', protect, updateBook);
 router.delete('/:id', protect, deleteBook);
 
 export default router;
