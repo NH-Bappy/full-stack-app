@@ -82,14 +82,13 @@ export const getBookById = async (req, res) => {
 
 export const updateBook = async (req, res) => {
   const { id } = req.params;
-  const { title, author, isbn, rfidUid, available } = req.body;
+  const { title, author, isbn, available } = req.body;
 
   try {
     const updatedData = {
       title,
       author,
       isbn,
-      rfidUid,
     };
 
     if (available !== undefined) {
@@ -115,10 +114,18 @@ export const deleteBook = async (req, res) => {
   const { id } = req.params;
 
   try {
-    await prisma.book.update({
-      where: { id: Number(id) },
-      data: { active: false },
+    const bookIdNum = Number(id);
+
+    // 1. Delete associated transactions first to prevent foreign key errors
+    await prisma.transaction.deleteMany({
+      where: { bookId: bookIdNum },
     });
+
+    // 2. Hard delete the book
+    await prisma.book.delete({
+      where: { id: bookIdNum },
+    });
+
     res.json({ message: 'Book deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete book', error: error.message });

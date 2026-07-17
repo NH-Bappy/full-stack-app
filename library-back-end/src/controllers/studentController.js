@@ -74,12 +74,12 @@ export const getStudentById = async (req, res) => {
 
 export const updateStudent = async (req, res) => {
   const { id } = req.params;
-  const { name, studentId, email, rfidUid } = req.body;
+  const { name, studentId, email } = req.body;
 
   try {
     const student = await prisma.student.update({
       where: { id: Number(id) },
-      data: { name, studentId, email, rfidUid },
+      data: { name, studentId, email },
     });
 
     res.json(student);
@@ -92,10 +92,18 @@ export const deleteStudent = async (req, res) => {
   const { id } = req.params;
 
   try {
-    await prisma.student.update({
-      where: { id: Number(id) },
-      data: { active: false },
+    const studentIdNum = Number(id);
+
+    // 1. Delete associated transactions first to prevent foreign key errors
+    await prisma.transaction.deleteMany({
+      where: { studentId: studentIdNum },
     });
+
+    // 2. Hard delete the student
+    await prisma.student.delete({
+      where: { id: studentIdNum },
+    });
+
     res.json({ message: 'Student deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete student', error: error.message });
