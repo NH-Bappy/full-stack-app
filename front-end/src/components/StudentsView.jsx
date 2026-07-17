@@ -35,6 +35,7 @@ const StudentsView = () => {
   const [formStudentId, setFormStudentId] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formRfidUid, setFormRfidUid] = useState('');
+  const [profileFile, setProfileFile] = useState(null);
   
   // Errors & success
   const [formError, setFormError] = useState('');
@@ -56,6 +57,12 @@ const StudentsView = () => {
     };
   }, [isAddOpen]);
 
+  const getMediaUrl = (path) => {
+    if (!path) return '';
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    return `${baseUrl}${path}`;
+  };
+
   // Fetch Students
   const { data: students, isLoading, error } = useQuery({
     queryKey: ['students'],
@@ -67,8 +74,12 @@ const StudentsView = () => {
 
   // Create Student Mutation
   const createMutation = useMutation({
-    mutationFn: async (newStudent) => {
-      const response = await api.post('/students', newStudent);
+    mutationFn: async (formData) => {
+      const response = await api.post('/students', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -87,8 +98,12 @@ const StudentsView = () => {
 
   // Update Student Mutation
   const updateMutation = useMutation({
-    mutationFn: async ({ id, updatedData }) => {
-      const response = await api.put(`/students/${id}`, updatedData);
+    mutationFn: async ({ id, formData }) => {
+      const response = await api.put(`/students/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -128,6 +143,7 @@ const StudentsView = () => {
     setFormStudentId('');
     setFormEmail('');
     setFormRfidUid('');
+    setProfileFile(null);
     setFormError('');
     setFormSuccess('');
     setSelectedStudent(null);
@@ -140,12 +156,17 @@ const StudentsView = () => {
       setFormError('First Name, Last Name, Student ID, and RFID UID are required.');
       return;
     }
-    createMutation.mutate({
-      name: `${formFirstName.trim()} ${formLastName.trim()}`,
-      studentId: formStudentId,
-      email: formEmail || null,
-      rfidUid: formRfidUid
-    });
+
+    const formData = new FormData();
+    formData.append('name', `${formFirstName.trim()} ${formLastName.trim()}`);
+    formData.append('studentId', formStudentId);
+    if (formEmail) formData.append('email', formEmail);
+    formData.append('rfidUid', formRfidUid);
+    if (profileFile) {
+      formData.append('profileImage', profileFile);
+    }
+
+    createMutation.mutate(formData);
   };
 
   const handleEditSubmit = (e) => {
@@ -155,14 +176,19 @@ const StudentsView = () => {
       setFormError('First Name, Last Name, Student ID, and RFID UID are required.');
       return;
     }
+
+    const formData = new FormData();
+    formData.append('name', `${formFirstName.trim()} ${formLastName.trim()}`);
+    formData.append('studentId', formStudentId);
+    if (formEmail) formData.append('email', formEmail);
+    formData.append('rfidUid', formRfidUid);
+    if (profileFile) {
+      formData.append('profileImage', profileFile);
+    }
+
     updateMutation.mutate({
       id: selectedStudent.id,
-      updatedData: {
-        name: `${formFirstName.trim()} ${formLastName.trim()}`,
-        studentId: formStudentId,
-        email: formEmail || null,
-        rfidUid: formRfidUid
-      }
+      formData: formData
     });
   };
 
@@ -176,6 +202,7 @@ const StudentsView = () => {
     setFormStudentId(student.studentId);
     setFormEmail(student.email || '');
     setFormRfidUid(student.rfidUid);
+    setProfileFile(null);
     setIsEditOpen(true);
   };
 
@@ -261,9 +288,27 @@ const StudentsView = () => {
               <tbody className="divide-y divide-slate-100">
                 {filteredStudents.map((student) => (
                   <tr key={student.id} className="hover:bg-slate-50/70 transition-colors group">
-                    <td className="py-4 px-6">
-                      <div className="font-bold text-slate-850 text-slate-800 group-hover:text-indigo-600 transition-colors">
-                        {student.name}
+                    <td className="py-4 px-6 flex items-center gap-3.5">
+                      {/* Student Profile Thumbnail */}
+                      <div className="w-10 h-10 rounded-full border border-slate-200 bg-slate-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                        {student.profileImage ? (
+                          <img
+                            src={getMediaUrl(student.profileImage)}
+                            alt={student.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=60';
+                            }}
+                          />
+                        ) : (
+                          <User className="w-5 h-5 text-slate-400" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-850 text-slate-800 group-hover:text-indigo-600 transition-colors">
+                          {student.name}
+                        </div>
                       </div>
                     </td>
                     <td className="py-4 px-6 text-sm font-semibold text-slate-700">
@@ -400,6 +445,17 @@ const StudentsView = () => {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-slate-500 text-xs font-semibold mb-1.5">Profile Image</label>
+                <input
+                  type="file"
+                  accept=".png,.jpg,.jpeg"
+                  onChange={(e) => setProfileFile(e.target.files[0])}
+                  className="glass-input w-full px-3.5 py-2 rounded-xl text-sm file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                />
+                <span className="text-[10px] text-slate-400 mt-1 block">Supports PNG, JPG, and JPEG formats. Optional.</span>
+              </div>
+
               <div className="flex gap-3 justify-end pt-4">
                 <button
                   type="button"
@@ -511,6 +567,17 @@ const StudentsView = () => {
                     className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm font-mono bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-500 text-xs font-semibold mb-1.5">Update Profile Image</label>
+                <input
+                  type="file"
+                  accept=".png,.jpg,.jpeg"
+                  onChange={(e) => setProfileFile(e.target.files[0])}
+                  className="glass-input w-full px-3.5 py-2 rounded-xl text-sm file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                />
+                <span className="text-[10px] text-slate-400 mt-1 block">Leave empty to keep current profile picture. Supports PNG, JPG, and JPEG.</span>
               </div>
 
               <div className="flex gap-3 justify-end pt-4">
