@@ -48,7 +48,6 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
   const [formIsbn, setFormIsbn] = useState('');
   const [formRfidUid, setFormRfidUid] = useState('');
   const [formAvailable, setFormAvailable] = useState(true);
-  const [coverFile, setCoverFile] = useState(null);
 
   // Errors & success
   const [formError, setFormError] = useState('');
@@ -81,12 +80,8 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
 
   // Create Book Mutation
   const createMutation = useMutation({
-    mutationFn: async (formData) => {
-      const response = await api.post('/books', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+    mutationFn: async (newBook) => {
+      const response = await api.post('/books', newBook);
       return response.data;
     },
     onSuccess: () => {
@@ -105,12 +100,8 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
 
   // Update Book Mutation
   const updateMutation = useMutation({
-    mutationFn: async ({ id, formData }) => {
-      const response = await api.put(`/books/${id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+    mutationFn: async ({ id, updatedData }) => {
+      const response = await api.put(`/books/${id}`, updatedData);
       return response.data;
     },
     onSuccess: () => {
@@ -150,7 +141,6 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
     setFormIsbn('');
     setFormRfidUid('');
     setFormAvailable(true);
-    setCoverFile(null);
     setFormError('');
     setFormSuccess('');
     setSelectedBook(null);
@@ -165,20 +155,13 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
       return;
     }
 
-    if (!coverFile) {
-      setFormError('A cover file (image or PDF) is required.');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('title', formTitle);
-    formData.append('author', formAuthor);
-    formData.append('isbn', formIsbn || '');
-    formData.append('rfidUid', formRfidUid);
-    formData.append('available', formAvailable);
-    formData.append('coverImage', coverFile);
-
-    createMutation.mutate(formData);
+    createMutation.mutate({
+      title: formTitle,
+      author: formAuthor,
+      isbn: formIsbn || '',
+      rfidUid: formRfidUid,
+      available: formAvailable
+    });
   };
 
   const handleEditSubmit = (e) => {
@@ -190,17 +173,15 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('title', formTitle);
-    formData.append('author', formAuthor);
-    formData.append('isbn', formIsbn || '');
-    formData.append('rfidUid', formRfidUid);
-    formData.append('available', formAvailable);
-    if (coverFile) {
-      formData.append('coverImage', coverFile);
-    }
-
-    updateMutation.mutate({ id: selectedBook.id, formData });
+    updateMutation.mutate({
+      id: selectedBook.id,
+      updatedData: {
+        title: formTitle,
+        author: formAuthor,
+        isbn: formIsbn || '',
+        available: formAvailable
+      }
+    });
   };
 
   const openEditModal = (book) => {
@@ -210,7 +191,6 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
     setFormIsbn(book.isbn || '');
     setFormRfidUid(book.rfidUid);
     setFormAvailable(book.available);
-    setCoverFile(null);
     setIsEditOpen(true);
   };
 
@@ -323,28 +303,9 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
                   return (
                     <tr key={book.id} className="hover:bg-slate-55/30 hover:bg-slate-50/50 transition-colors group">
                       <td className="py-4 px-6 flex items-center gap-3.5">
-                        {/* Book Cover Thumbnail */}
+                        {/* Book Icon */}
                         <div className="w-10 h-14 rounded border border-slate-200 bg-slate-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                          {book.coverImage ? (
-                            isPdf ? (
-                              <div className="flex flex-col items-center justify-center p-0.5 text-center">
-                                <FileText className="w-5 h-5 text-red-500" />
-                                <span className="text-[7px] font-extrabold text-slate-500 uppercase">PDF</span>
-                              </div>
-                            ) : (
-                              <img
-                                src={getMediaUrl(book.coverImage)}
-                                alt={book.title}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=80&auto=format&fit=crop&q=60';
-                                }}
-                              />
-                            )
-                          ) : (
-                            <BookOpen className="w-4 h-4 text-slate-400" />
-                          )}
+                          <BookOpen className="w-5 h-5 text-slate-400" />
                         </div>
 
                         <div>
@@ -484,16 +445,7 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-500 text-xs font-semibold mb-1.5">Cover Image / Document *</label>
-                <input
-                  type="file"
-                  accept=".png,.jpg,.jpeg,.pdf"
-                  onChange={(e) => setCoverFile(e.target.files[0])}
-                  className="glass-input w-full px-3.5 py-2 rounded-xl text-sm file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-750 file:text-indigo-700 hover:file:bg-indigo-100"
-                />
-                <span className="text-[10px] text-slate-400 mt-1 block">Supports PNG, JPG, JPEG, and PDF formats. Required.</span>
-              </div>
+
 
               <div className="flex items-center gap-2 pt-2">
                 <input
@@ -607,16 +559,7 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-500 text-xs font-semibold mb-1.5">Update Cover Image / Document</label>
-                <input
-                  type="file"
-                  accept=".png,.jpg,.jpeg,.pdf"
-                  onChange={(e) => setCoverFile(e.target.files[0])}
-                  className="glass-input w-full px-3.5 py-2 rounded-xl text-sm file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                />
-                <span className="text-[10px] text-slate-400 mt-1 block">Leave empty to keep current cover. Supports PNG, JPG, JPEG, and PDF.</span>
-              </div>
+
 
               <div className="flex items-center gap-2 pt-2">
                 <input
