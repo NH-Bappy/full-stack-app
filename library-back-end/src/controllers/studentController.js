@@ -34,8 +34,10 @@ export const createStudent = async (req, res) => {
       return res.status(409).json({ message: `${field} is already registered` });
     }
 
+    const profileImagePath = req.file ? '/uploads/' + req.file.filename : '';
+
     const student = await prisma.student.create({
-      data: { name, studentId, email, rfidUid },
+      data: { name, studentId, email, rfidUid, profileImage: profileImagePath },
     });
 
     res.status(201).json(student);
@@ -77,9 +79,15 @@ export const updateStudent = async (req, res) => {
   const { name, studentId, email } = req.body;
 
   try {
+    const updatedData = { name, studentId, email };
+
+    if (req.file) {
+      updatedData.profileImage = '/uploads/' + req.file.filename;
+    }
+
     const student = await prisma.student.update({
       where: { id: Number(id) },
-      data: { name, studentId, email },
+      data: updatedData,
     });
 
     res.json(student);
