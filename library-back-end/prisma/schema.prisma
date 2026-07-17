@@ -7,13 +7,14 @@ datasource db {
 }
 
 model Student {
-  id          Int           @id @default(autoincrement())
-  name        String
-  studentId   String        @unique
-  email       String?
-  rfidUid     String        @unique
-  active      Boolean       @default(true)
-  createdAt   DateTime      @default(now())
+  id           Int           @id @default(autoincrement())
+  name         String
+  studentId    String        @unique
+  email        String?
+  rfidUid      String        @unique
+  profileImage String        @default("")
+  active       Boolean       @default(true)
+  createdAt    DateTime      @default(now())
   transactions Transaction[]
 }
 
@@ -24,7 +25,6 @@ model Book {
   isbn        String?
   rfidUid     String        @unique
   available   Boolean       @default(true)
-  coverImage  String        @default("")
   active      Boolean       @default(true)
   createdAt   DateTime      @default(now())
   transactions Transaction[]
