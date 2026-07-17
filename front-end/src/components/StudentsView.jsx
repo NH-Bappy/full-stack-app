@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
+import { io } from 'socket.io-client';
 import { 
   Search, 
   Plus, 
@@ -29,7 +30,8 @@ const StudentsView = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   
   // Form states
-  const [formName, setFormName] = useState('');
+  const [formFirstName, setFormFirstName] = useState('');
+  const [formLastName, setFormLastName] = useState('');
   const [formStudentId, setFormStudentId] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formRfidUid, setFormRfidUid] = useState('');
@@ -37,6 +39,22 @@ const StudentsView = () => {
   // Errors & success
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
+
+  // Auto-fill RFID from hardware scans when registration modal is open
+  useEffect(() => {
+    const socketUrl = import.meta.env.VITE_API_SOCKET_URL || 'http://localhost:3000';
+    const socket = io(socketUrl);
+
+    socket.on('rfidScan', (data) => {
+      if (isAddOpen) {
+        setFormRfidUid(data.rfidUid);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [isAddOpen]);
 
   // Fetch Students
   const { data: students, isLoading, error } = useQuery({
@@ -105,7 +123,8 @@ const StudentsView = () => {
   });
 
   const resetForm = () => {
-    setFormName('');
+    setFormFirstName('');
+    setFormLastName('');
     setFormStudentId('');
     setFormEmail('');
     setFormRfidUid('');
@@ -117,12 +136,12 @@ const StudentsView = () => {
   const handleAddSubmit = (e) => {
     e.preventDefault();
     setFormError('');
-    if (!formName || !formStudentId || !formRfidUid) {
-      setFormError('Name, Student ID, and RFID UID are required.');
+    if (!formFirstName || !formLastName || !formStudentId || !formRfidUid) {
+      setFormError('First Name, Last Name, Student ID, and RFID UID are required.');
       return;
     }
     createMutation.mutate({
-      name: formName,
+      name: `${formFirstName.trim()} ${formLastName.trim()}`,
       studentId: formStudentId,
       email: formEmail || null,
       rfidUid: formRfidUid
@@ -132,14 +151,14 @@ const StudentsView = () => {
   const handleEditSubmit = (e) => {
     e.preventDefault();
     setFormError('');
-    if (!formName || !formStudentId || !formRfidUid) {
-      setFormError('Name, Student ID, and RFID UID are required.');
+    if (!formFirstName || !formLastName || !formStudentId || !formRfidUid) {
+      setFormError('First Name, Last Name, Student ID, and RFID UID are required.');
       return;
     }
     updateMutation.mutate({
       id: selectedStudent.id,
       updatedData: {
-        name: formName,
+        name: `${formFirstName.trim()} ${formLastName.trim()}`,
         studentId: formStudentId,
         email: formEmail || null,
         rfidUid: formRfidUid
@@ -149,7 +168,11 @@ const StudentsView = () => {
 
   const openEditModal = (student) => {
     setSelectedStudent(student);
-    setFormName(student.name);
+    const nameParts = (student.name || '').trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    setFormFirstName(firstName);
+    setFormLastName(lastName);
     setFormStudentId(student.studentId);
     setFormEmail(student.email || '');
     setFormRfidUid(student.rfidUid);
@@ -306,17 +329,32 @@ const StudentsView = () => {
             )}
 
             <form onSubmit={handleAddSubmit} className="space-y-4">
-              <div>
-                <label className="block text-slate-500 text-xs font-semibold mb-1.5">Full Name *</label>
-                <div className="relative">
-                  <User className="absolute inset-y-0 left-3 text-slate-400 w-4 h-4 my-auto" />
-                  <input
-                    type="text"
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
-                    placeholder="e.g. Rafiq Islam"
-                    className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm"
-                  />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-500 text-xs font-semibold mb-1.5">First Name *</label>
+                  <div className="relative">
+                    <User className="absolute inset-y-0 left-3 text-slate-400 w-4 h-4 my-auto" />
+                    <input
+                      type="text"
+                      value={formFirstName}
+                      onChange={(e) => setFormFirstName(e.target.value)}
+                      placeholder="e.g. Rafiq"
+                      className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-slate-500 text-xs font-semibold mb-1.5">Last Name *</label>
+                  <div className="relative">
+                    <User className="absolute inset-y-0 left-3 text-slate-400 w-4 h-4 my-auto" />
+                    <input
+                      type="text"
+                      value={formLastName}
+                      onChange={(e) => setFormLastName(e.target.value)}
+                      placeholder="e.g. Islam"
+                      className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -349,15 +387,15 @@ const StudentsView = () => {
               </div>
 
               <div>
-                <label className="block text-slate-500 text-xs font-semibold mb-1.5">RFID UID (Card Tag ID) *</label>
+                <label className="block text-slate-400 text-xs font-semibold mb-1.5">RFID UID (Card Tag ID) - Scan Only</label>
                 <div className="relative">
-                  <Barcode className="absolute inset-y-0 left-3 text-slate-400 w-4 h-4 my-auto" />
+                  <Barcode className="absolute inset-y-0 left-3 text-slate-300 w-4 h-4 my-auto" />
                   <input
                     type="text"
                     value={formRfidUid}
-                    onChange={(e) => setFormRfidUid(e.target.value)}
-                    placeholder="e.g. RFID002"
-                    className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm font-mono"
+                    placeholder="Scan RFID card to fill automatically"
+                    disabled
+                    className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm font-mono bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -409,16 +447,30 @@ const StudentsView = () => {
             )}
 
             <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div>
-                <label className="block text-slate-500 text-xs font-semibold mb-1.5">Full Name *</label>
-                <div className="relative">
-                  <User className="absolute inset-y-0 left-3 text-slate-400 w-4 h-4 my-auto" />
-                  <input
-                    type="text"
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
-                    className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm"
-                  />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-500 text-xs font-semibold mb-1.5">First Name *</label>
+                  <div className="relative">
+                    <User className="absolute inset-y-0 left-3 text-slate-400 w-4 h-4 my-auto" />
+                    <input
+                      type="text"
+                      value={formFirstName}
+                      onChange={(e) => setFormFirstName(e.target.value)}
+                      className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-slate-500 text-xs font-semibold mb-1.5">Last Name *</label>
+                  <div className="relative">
+                    <User className="absolute inset-y-0 left-3 text-slate-400 w-4 h-4 my-auto" />
+                    <input
+                      type="text"
+                      value={formLastName}
+                      onChange={(e) => setFormLastName(e.target.value)}
+                      className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -449,14 +501,14 @@ const StudentsView = () => {
               </div>
 
               <div>
-                <label className="block text-slate-500 text-xs font-semibold mb-1.5">RFID UID (Card Tag ID) *</label>
+                <label className="block text-slate-400 text-xs font-semibold mb-1.5">RFID UID (Card Tag ID) - Unchangeable</label>
                 <div className="relative">
-                  <Barcode className="absolute inset-y-0 left-3 text-slate-400 w-4 h-4 my-auto" />
+                  <Barcode className="absolute inset-y-0 left-3 text-slate-300 w-4 h-4 my-auto" />
                   <input
                     type="text"
                     value={formRfidUid}
-                    onChange={(e) => setFormRfidUid(e.target.value)}
-                    className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm font-mono"
+                    disabled
+                    className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm font-mono bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed"
                   />
                 </div>
               </div>
