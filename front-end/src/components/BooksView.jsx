@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../api/axios';
-import { 
-  Search, 
-  Plus, 
-  Edit2, 
-  Trash2, 
-  X, 
-  BookOpen, 
-  Check, 
+import { io } from 'socket.io-client';
+import {
+  Search,
+  Plus,
+  Edit2,
+  Trash2,
+  X,
+  BookOpen,
+  Check,
   AlertCircle,
   Hash,
   User,
@@ -22,7 +23,7 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
   const [filterStatus, setFilterStatus] = useState(initialFilter);
 
   // Sync local filter status when initialFilter prop changes
-  React.useEffect(() => {
+  useEffect(() => {
     setFilterStatus(initialFilter);
   }, [initialFilter]);
 
@@ -32,15 +33,15 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
       setInitialFilter(status);
     }
   };
-  
+
   // Modals state
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  
+
   // Selected Book for Edit/Delete
   const [selectedBook, setSelectedBook] = useState(null);
-  
+
   // Form states
   const [formTitle, setFormTitle] = useState('');
   const [formAuthor, setFormAuthor] = useState('');
@@ -48,10 +49,26 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
   const [formRfidUid, setFormRfidUid] = useState('');
   const [formAvailable, setFormAvailable] = useState(true);
   const [coverFile, setCoverFile] = useState(null);
-  
+
   // Errors & success
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
+
+  // Auto-fill RFID from hardware scans when add book modal is open
+  useEffect(() => {
+    const socketUrl = import.meta.env.VITE_API_SOCKET_URL || 'http://localhost:3000';
+    const socket = io(socketUrl);
+
+    socket.on('rfidScan', (data) => {
+      if (isAddOpen) {
+        setFormRfidUid(data.rfidUid);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [isAddOpen]);
 
   // Fetch Books
   const { data: books, isLoading, error } = useQuery({
@@ -204,12 +221,12 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
 
   // Filtered books
   const filteredBooks = books?.filter(book => {
-    const matchesSearch = 
-      book.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      book.author.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch =
+      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (book.isbn && book.isbn.includes(searchTerm)) ||
       book.rfidUid.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     if (filterStatus === 'available') return matchesSearch && book.available;
     if (filterStatus === 'issued') return matchesSearch && !book.available;
     return matchesSearch;
@@ -259,11 +276,10 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
             <button
               key={status}
               onClick={() => handleFilterChange(status)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize transition-all cursor-pointer border ${
-                filterStatus === status
+              className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize transition-all cursor-pointer border ${filterStatus === status
                   ? 'bg-white border-indigo-600 text-indigo-600 shadow-sm'
                   : 'border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100'
-              }`}
+                }`}
             >
               {status}
             </button>
@@ -316,9 +332,9 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
                                 <span className="text-[7px] font-extrabold text-slate-500 uppercase">PDF</span>
                               </div>
                             ) : (
-                              <img 
-                                src={getMediaUrl(book.coverImage)} 
-                                alt={book.title} 
+                              <img
+                                src={getMediaUrl(book.coverImage)}
+                                alt={book.title}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
                                   e.target.onerror = null;
@@ -355,7 +371,7 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                            Checked Out
+                            Borrowed
                           </span>
                         )}
                       </td>
@@ -390,14 +406,14 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
       {isAddOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
           <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl relative animate-fade-in-up border border-slate-200">
-            <button 
-              onClick={() => setIsAddOpen(false)} 
+            <button
+              onClick={() => setIsAddOpen(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
             <h3 className="text-xl font-bold text-slate-800 mb-4">Register New Book</h3>
-            
+
             {formError && (
               <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-700 text-xs p-3 rounded-lg mb-4">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -455,15 +471,15 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
               </div>
 
               <div>
-                <label className="block text-slate-505 text-slate-550 text-slate-500 text-xs font-semibold mb-1.5">RFID UID (Tag Identifier) *</label>
+                <label className="block text-slate-400 text-xs font-semibold mb-1.5">RFID UID (Tag Identifier) - Scan Only</label>
                 <div className="relative">
-                  <Barcode className="absolute inset-y-0 left-3 text-slate-400 w-4 h-4 my-auto" />
+                  <Barcode className="absolute inset-y-0 left-3 text-slate-300 w-4 h-4 my-auto" />
                   <input
                     type="text"
                     value={formRfidUid}
-                    onChange={(e) => setFormRfidUid(e.target.value)}
-                    placeholder="e.g. BOOK004"
-                    className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm font-mono"
+                    placeholder="Scan Book Tag to fill automatically"
+                    disabled
+                    className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm font-mono bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -517,8 +533,8 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
       {isEditOpen && selectedBook && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
           <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl relative animate-fade-in-up border border-slate-200">
-            <button 
-              onClick={() => setIsEditOpen(false)} 
+            <button
+              onClick={() => setIsEditOpen(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 cursor-pointer"
             >
               <X className="w-5 h-5" />
@@ -579,14 +595,14 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
               </div>
 
               <div>
-                <label className="block text-slate-505 text-slate-500 text-xs font-semibold mb-1.5">RFID UID (Tag Identifier) *</label>
+                <label className="block text-slate-400 text-xs font-semibold mb-1.5">RFID UID (Tag Identifier) - Unchangeable</label>
                 <div className="relative">
-                  <Barcode className="absolute inset-y-0 left-3 text-slate-400 w-4 h-4 my-auto" />
+                  <Barcode className="absolute inset-y-0 left-3 text-slate-300 w-4 h-4 my-auto" />
                   <input
                     type="text"
                     value={formRfidUid}
-                    onChange={(e) => setFormRfidUid(e.target.value)}
-                    className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm font-mono"
+                    disabled
+                    className="glass-input w-full pl-9 pr-4 py-2 rounded-xl text-sm font-mono bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed"
                   />
                 </div>
               </div>
