@@ -207,15 +207,30 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   // Return Book Mutation
   const returnMutation = useMutation({
     mutationFn: returnBook,
-    onSuccess: (data) => {
-      const fineText = data.fine > 0 ? ` Fine due: ৳${data.fine}` : '';
-      setMessage({ type: 'success', text: `${data.message || 'Book returned successfully!'}${fineText} - Confirmed by Administration` });
+    onMutate: () => {
+      setToast({ visible: true, message: 'Returning...', type: 'loading' });
+    },
+    onSuccess: (data, variables) => {
+      const bookTitle = books?.find(b => b.rfidUid === variables.bookRfidUid)?.title || "Book";
+      const fineText = data.fine > 0 ? ` (Fine: ৳${data.fine})` : '';
+      setToast({ visible: true, message: `Successfully returned "${bookTitle}"${fineText}`, type: 'success' });
+      setTimeout(() => {
+        setToast(prev => prev.type === 'success' ? { ...prev, visible: false } : prev);
+      }, 3500);
+
+      const fineTextMsg = data.fine > 0 ? ` Fine due: ৳${data.fine}` : '';
+      setMessage({ type: 'success', text: `${data.message || 'Book returned successfully!'}${fineTextMsg} - Confirmed by Administration` });
       setBookRfid('');
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['books'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
     },
     onError: (err) => {
+      setToast({ visible: true, message: err.response?.data?.message || 'Failed to return book', type: 'error' });
+      setTimeout(() => {
+        setToast(prev => prev.type === 'error' ? { ...prev, visible: false } : prev);
+      }, 3500);
+
       setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to return book' });
     }
   });
@@ -614,7 +629,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
               {toast.type === 'loading' && (
                 <>
                   <div className="w-16 h-16 border-4 border-[#0B4262] border-t-transparent rounded-full animate-spin mb-5" />
-                  <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">Borrowing...</h3>
+                  <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">{toast.message}</h3>
                   <p className="text-slate-400 text-xs mt-2">Processing transaction with secure RFID network.</p>
                 </>
               )}
