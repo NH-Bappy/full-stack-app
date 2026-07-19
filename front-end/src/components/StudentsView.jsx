@@ -17,9 +17,25 @@ import {
   IdCard
 } from 'lucide-react';
 
-const StudentsView = () => {
+const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Handle scanned RFID redirection
+  useEffect(() => {
+    if (scannedRfid) {
+      setFormRfidUid(scannedRfid);
+      setIsAddOpen(true);
+      if (clearScannedRfid) clearScannedRfid();
+    }
+  }, [scannedRfid, clearScannedRfid]);
+
+  // Track if any form modal is open
+  useEffect(() => {
+    if (setIsFormOpen) {
+      setIsFormOpen(isAddOpen || isEditOpen || isDeleteOpen);
+    }
+  }, [isAddOpen, isEditOpen, isDeleteOpen, setIsFormOpen]);
   
   // Modals state
   const [isAddOpen, setIsAddOpen] = useState(false);

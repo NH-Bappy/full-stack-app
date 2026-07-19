@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from './context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
@@ -9,12 +9,40 @@ import StudentsView from './components/StudentsView';
 import BorrowersView from './components/BorrowersView';
 import TransactionsView from './components/TransactionsView';
 import ReportsView from './components/ReportsView';
+import { io } from 'socket.io-client';
+import { Users } from 'lucide-react';
 
 function App() {
   const { admin, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [booksFilter, setBooksFilter] = useState('all');
   const [transactionsFilter, setTransactionsFilter] = useState(false);
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [scannedRfid, setScannedRfid] = useState('');
+  const [detectedRfid, setDetectedRfid] = useState(null);
+
+  const isFormOpenRef = useRef(isFormOpen);
+  useEffect(() => {
+    isFormOpenRef.current = isFormOpen;
+  }, [isFormOpen]);
+
+  useEffect(() => {
+    const socketUrl = import.meta.env.VITE_API_SOCKET_URL || 'http://localhost:3000';
+    const socket = io(socketUrl);
+
+    socket.on('rfidScan', (data) => {
+      if (data.type === 'unknown') {
+        if (!isFormOpenRef.current) {
+          setDetectedRfid(data.rfidUid);
+        }
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   const navigateToView = (tab, filterVal) => {
     setActiveTab(tab);
@@ -46,9 +74,23 @@ function App() {
       case 'dashboard':
         return <DashboardView setActiveTab={setActiveTab} navigateToView={navigateToView} />;
       case 'books':
-        return <BooksView initialFilter={booksFilter} setInitialFilter={setBooksFilter} />;
+        return (
+          <BooksView 
+            initialFilter={booksFilter} 
+            setInitialFilter={setBooksFilter} 
+            scannedRfid={scannedRfid}
+            clearScannedRfid={() => setScannedRfid('')}
+            setIsFormOpen={setIsFormOpen}
+          />
+        );
       case 'students':
-        return <StudentsView />;
+        return (
+          <StudentsView 
+            scannedRfid={scannedRfid}
+            clearScannedRfid={() => setScannedRfid('')}
+            setIsFormOpen={setIsFormOpen}
+          />
+        );
       case 'borrowers':
         return <BorrowersView />;
       case 'transactions':
@@ -103,6 +145,59 @@ function App() {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Global New Card Detection Popup */}
+      <AnimatePresence>
+        {detectedRfid && (
+          <div className="fixed inset-0 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm z-50 p-4 pointer-events-auto">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 15 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="bg-white rounded-3xl p-8 shadow-2xl flex flex-col items-center max-w-sm w-full text-center border border-slate-100"
+            >
+              <div className="w-16 h-16 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#0B4262] mb-5 shadow-sm shadow-[#0B4262]/10">
+                <Users className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">New Card Detected!</h3>
+              <p className="text-slate-550 text-xs mt-2 flex items-center gap-1">Scanned RFID: <strong className="font-mono text-indigo-600">{detectedRfid}</strong></p>
+              <p className="text-slate-400 text-xs mt-3 leading-relaxed">
+                This RFID card is not registered in our database. Choose an action below to register it.
+              </p>
+
+              <div className="flex flex-col gap-2.5 w-full mt-6">
+                <button
+                  onClick={() => {
+                    setScannedRfid(detectedRfid);
+                    setActiveTab('students');
+                    setDetectedRfid(null);
+                  }}
+                  className="w-full py-3 bg-[#0B4262] hover:bg-[#083047] text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
+                >
+                  Create Student Member
+                </button>
+                <button
+                  onClick={() => {
+                    setScannedRfid(detectedRfid);
+                    setActiveTab('books');
+                    setDetectedRfid(null);
+                  }}
+                  className="w-full py-3 bg-white hover:bg-slate-50 text-[#0B4262] border border-[#0B4262]/20 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                >
+                  Create Book Register
+                </button>
+                <button
+                  onClick={() => setDetectedRfid(null)}
+                  className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-all cursor-pointer text-xs font-bold"
+                >
+                  Ignore Card
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

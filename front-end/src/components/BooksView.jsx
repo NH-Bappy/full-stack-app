@@ -17,7 +17,7 @@ import {
   FileText
 } from 'lucide-react';
 
-const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
+const BooksView = ({ initialFilter = 'all', setInitialFilter, scannedRfid, clearScannedRfid, setIsFormOpen }) => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState(initialFilter);
@@ -26,6 +26,22 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
   useEffect(() => {
     setFilterStatus(initialFilter);
   }, [initialFilter]);
+
+  // Handle scanned RFID redirection
+  useEffect(() => {
+    if (scannedRfid) {
+      setFormRfidUid(scannedRfid);
+      setIsAddOpen(true);
+      if (clearScannedRfid) clearScannedRfid();
+    }
+  }, [scannedRfid, clearScannedRfid]);
+
+  // Track if any form modal is open
+  useEffect(() => {
+    if (setIsFormOpen) {
+      setIsFormOpen(isAddOpen || isEditOpen || isDeleteOpen);
+    }
+  }, [isAddOpen, isEditOpen, isDeleteOpen, setIsFormOpen]);
 
   const handleFilterChange = (status) => {
     setFilterStatus(status);
