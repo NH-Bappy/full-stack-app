@@ -16,6 +16,7 @@ import {
   Search
 } from 'lucide-react';
 import { io } from 'socket.io-client';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue }) => {
   const queryClient = useQueryClient();
@@ -43,6 +44,8 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   const [studentRfid, setStudentRfid] = useState('');
   const [bookRfid, setBookRfid] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [toast, setToast] = useState({ visible: false, message: '', type: 'loading' });
+  const [lastBorrowedBookTitle, setLastBorrowedBookTitle] = useState('');
 
   // Refs to avoid stale closures in WebSocket event listeners
   const studentRfidRef = useRef(studentRfid);
@@ -114,6 +117,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
         setMessage({ type: 'success', text: `Hardware scanned Student: ${data.student.name}` });
       } else if (data.type === 'book') {
         setBookRfid(data.rfidUid);
+        setLastBorrowedBookTitle(data.book.title);
         addSocketLog(`[HARDWARE] Book Scanned: "${data.book.title}" (RFID: ${data.rfidUid})`);
         
         // Auto-run action logic based on book availability
@@ -167,7 +171,16 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   // Borrow Book Mutation
   const borrowMutation = useMutation({
     mutationFn: borrowBook,
-    onSuccess: (data) => {
+    onMutate: () => {
+      setToast({ visible: true, message: 'Borrowing...', type: 'loading' });
+    },
+    onSuccess: (data, variables) => {
+      const bookTitle = books?.find(b => b.rfidUid === variables.bookRfidUid)?.title || lastBorrowedBookTitle || "Book";
+      setToast({ visible: true, message: `Successfully borrowed "${bookTitle}"`, type: 'success' });
+      setTimeout(() => {
+        setToast(prev => prev.type === 'success' ? { ...prev, visible: false } : prev);
+      }, 3500);
+
       setMessage({ type: 'success', text: `${data.message || 'Book borrowed successfully!'} - Confirmed by Administration` });
       setStudentId('');
       setStudentRfid('');
@@ -177,6 +190,11 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
     },
     onError: (err) => {
+      setToast({ visible: true, message: err.response?.data?.message || 'Failed to borrow book', type: 'error' });
+      setTimeout(() => {
+        setToast(prev => prev.type === 'error' ? { ...prev, visible: false } : prev);
+      }, 3500);
+
       setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to borrow book' });
     }
   });
@@ -214,6 +232,8 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
       setMessage({ type: 'error', text: 'Specify either Student ID or RFID card, and the Book RFID tag.' });
       return;
     }
+    const targetBook = books?.find(b => b.rfidUid === bookRfid);
+    if (targetBook) setLastBorrowedBookTitle(targetBook.title);
     borrowMutation.mutate({
       studentId: studentId || null,
       studentRfidUid: studentRfid || null,
@@ -239,6 +259,8 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
         setMessage({ type: 'error', text: 'Select a student and a book to mock the borrow transaction.' });
         return;
       }
+      const targetBook = books?.find(b => b.rfidUid === selectedSimBook);
+      if (targetBook) setLastBorrowedBookTitle(targetBook.title);
       borrowMutation.mutate({
         studentRfidUid: selectedSimStudent,
         bookRfidUid: selectedSimBook
@@ -572,6 +594,64 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
           </div>
         </div>
       </div>
+      
+      {/* Center Toast Notifier */}
+      <AnimatePresence>
+        {toast.visible && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm z-50 p-4 pointer-events-auto"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 15 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="bg-white rounded-3xl p-8 shadow-2xl flex flex-col items-center max-w-sm w-full text-center border border-slate-100"
+            >
+              {toast.type === 'loading' && (
+                <>
+                  <div className="w-16 h-16 border-4 border-[#0B4262] border-t-transparent rounded-full animate-spin mb-5" />
+                  <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">Borrowing...</h3>
+                  <p className="text-slate-400 text-xs mt-2">Processing transaction with secure RFID network.</p>
+                </>
+              )}
+
+              {toast.type === 'success' && (
+                <>
+                  <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500 mb-5 shadow-sm shadow-emerald-500/10">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">Success!</h3>
+                  <p className="text-slate-500 text-sm mt-3.5 leading-relaxed font-semibold">
+                    {toast.message}
+                  </p>
+                </>
+              )}
+
+              {toast.type === 'error' && (
+                <>
+                  <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 mb-5 shadow-sm shadow-rose-500/10">
+                    <AlertCircle className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">Operation Failed</h3>
+                  <p className="text-slate-550 text-xs mt-3.5 leading-relaxed font-semibold">
+                    {toast.message}
+                  </p>
+                  <button 
+                    onClick={() => setToast(prev => ({ ...prev, visible: false }))}
+                    className="mt-6 px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

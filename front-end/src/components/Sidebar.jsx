@@ -2,13 +2,13 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import logo from '../assets/logo.png';
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  Users, 
-  Radio, 
-  BarChart3, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  BookOpen,
+  Users,
+  Radio,
+  BarChart3,
+  LogOut,
   User,
   UserCheck
 } from 'lucide-react';
@@ -18,7 +18,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'books', label: 'Books Catalog', icon: BookOpen },
+    { id: 'books', label: 'Books', icon: BookOpen },
     { id: 'students', label: 'Students', icon: Users },
     { id: 'borrowers', label: 'Borrowers', icon: UserCheck },
     { id: 'transactions', label: 'RFID Console', icon: Radio },
@@ -53,11 +53,10 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               whileTap={{ scale: 0.97 }}
-              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-colors duration-200 cursor-pointer relative ${
-                isActive
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-colors duration-200 cursor-pointer relative ${isActive
                   ? 'text-white'
                   : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50/50'
-              }`}
+                }`}
             >
               {isActive && (
                 <motion.div
@@ -69,10 +68,10 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               <Icon className={`w-4 h-4 z-10 ${isActive ? 'text-white' : 'text-slate-400'}`} />
               <span className="z-10">{item.label}</span>
               {isActive && (
-                <motion.div 
+                <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="ml-auto w-1.5 h-1.5 rounded-full bg-white z-10" 
+                  className="ml-auto w-1.5 h-1.5 rounded-full bg-white z-10"
                 />
               )}
             </motion.button>
