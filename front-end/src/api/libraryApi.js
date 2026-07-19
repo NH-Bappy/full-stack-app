@@ -109,3 +109,8 @@ export const seedDemoData = async () => {
   const response = await api.post('/demo/seed-demo');
   return response.data;
 };
+
+export const deleteTransaction = async (id) => {
+  const response = await api.delete(`/transactions/${id}`);
+  return response.data;
+};

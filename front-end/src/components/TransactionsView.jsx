@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getBooks, getStudents, getTransactions, borrowBook, returnBook } from '../api/libraryApi';
+import { getBooks, getStudents, getTransactions, borrowBook, returnBook, deleteTransaction } from '../api/libraryApi';
 import { 
   Radio, 
   BookOpen, 
@@ -13,7 +13,8 @@ import {
   Terminal,
   Clock,
   RefreshCw,
-  Search
+  Search,
+  Trash2
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -239,6 +240,26 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   useEffect(() => {
     returnMutationRef.current = returnMutation;
   }, [returnMutation]);
+
+  // Delete Transaction Mutation
+  const deleteMutation = useMutation({
+    mutationFn: deleteTransaction,
+    onSuccess: () => {
+      setMessage({ type: 'success', text: 'Transaction record deleted successfully!' });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['books'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+    },
+    onError: (err) => {
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to delete transaction' });
+    }
+  });
+
+  const handleDeleteTransaction = (id) => {
+    if (window.confirm('Are you sure you want to permanently delete this transaction record? Deleting active checkouts will reset the book back to available status.')) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   const handleBorrowSubmit = (e) => {
     e.preventDefault();
@@ -560,6 +581,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
                       <th className="py-3 px-4">Book</th>
                       <th className="py-3 px-4">Borrow / Return</th>
                       <th className="py-3 px-4 text-right">Fine</th>
+                      <th className="py-3 px-4 text-center">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -599,6 +621,15 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
                           ) : (
                             <span className="text-slate-350 text-slate-300">—</span>
                           )}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <button
+                            onClick={() => handleDeleteTransaction(trans.id)}
+                            className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                            title="Delete transaction record"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </td>
                       </tr>
                     ))}

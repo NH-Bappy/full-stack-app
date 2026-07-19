@@ -245,3 +245,33 @@ export const scanRfid = async (req, res) => {
   }
 };
 
+export const deleteTransaction = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ message: 'Transaction not found' });
+    }
+
+    // Sync book availability if active transaction is deleted
+    if (!transaction.returnDate) {
+      await prisma.book.update({
+        where: { id: transaction.bookId },
+        data: { available: true },
+      });
+    }
+
+    await prisma.transaction.delete({
+      where: { id: Number(id) },
+    });
+
+    res.json({ message: 'Transaction deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete transaction', error: error.message });
+  }
+};
+

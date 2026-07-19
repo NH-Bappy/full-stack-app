@@ -1,5 +1,5 @@
 import express from 'express';
-import { borrowBook, returnBook, getDashboard, getTransactions, getOverdueTransactions, scanRfid } from '../controllers/libraryController.js';
+import { borrowBook, returnBook, getDashboard, getTransactions, getOverdueTransactions, scanRfid, deleteTransaction } from '../controllers/libraryController.js';
 import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -10,5 +10,6 @@ router.post('/rfid/scan', scanRfid);
 router.get('/dashboard', protect, getDashboard);
 router.get('/transactions', protect, getTransactions);
 router.get('/transactions/overdue', protect, getOverdueTransactions);
+router.delete('/transactions/:id', protect, deleteTransaction);
 
 export default router;
