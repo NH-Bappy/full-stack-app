@@ -19,6 +19,35 @@ import {
   Calendar
 } from 'lucide-react';
 
+const getMediaUrl = (path) => {
+  if (!path) return '';
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+  return `${baseUrl}${path}`;
+};
+
+const StudentAvatar = ({ imagePath, name, size = "w-10 h-10", iconSize = "w-5 h-5" }) => {
+  const [hasError, setHasError] = useState(false);
+
+  if (imagePath && !hasError) {
+    return (
+      <div className={`${size} rounded-full border border-slate-200 bg-slate-105 bg-slate-100 flex-shrink-0 flex items-center justify-center overflow-hidden`}>
+        <img
+          src={getMediaUrl(imagePath)}
+          alt={name}
+          className="w-full h-full object-cover"
+          onError={() => setHasError(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${size} rounded-full border border-slate-200 bg-slate-105 bg-slate-100 flex-shrink-0 flex items-center justify-center overflow-hidden`}>
+      <User className={`${iconSize} text-slate-400`} />
+    </div>
+  );
+};
+
 const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
@@ -95,12 +124,6 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
       socket.disconnect();
     };
   }, [isAddOpen]);
-
-  const getMediaUrl = (path) => {
-    if (!path) return '';
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-    return `${baseUrl}${path}`;
-  };
 
   // Fetch Students
   const { data: students, isLoading, error } = useQuery({
@@ -312,21 +335,7 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
                       className="py-4 px-6 flex items-center gap-3.5 cursor-pointer"
                     >
                       {/* Student Profile Thumbnail */}
-                      <div className="w-10 h-10 rounded-full border border-slate-200 bg-slate-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                        {student.profileImage ? (
-                          <img
-                            src={getMediaUrl(student.profileImage)}
-                            alt={student.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=60';
-                            }}
-                          />
-                        ) : (
-                          <User className="w-5 h-5 text-slate-400" />
-                        )}
-                      </div>
+                      <StudentAvatar imagePath={student.profileImage} name={student.name} />
                       <div>
                         <div className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">
                           {student.name}
@@ -683,21 +692,12 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
               <div className="flex-1 overflow-y-auto pr-1 space-y-6">
                 {/* Header Profile */}
                 <div className="flex items-center gap-4 border-b border-slate-100 pb-5">
-                  <div className="w-16 h-16 rounded-full border border-slate-200 bg-slate-50 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                    {selectedStudentDetails.profileImage ? (
-                      <img
-                        src={getMediaUrl(selectedStudentDetails.profileImage)}
-                        alt={selectedStudentDetails.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=60';
-                        }}
-                      />
-                    ) : (
-                      <User className="w-8 h-8 text-slate-400" />
-                    )}
-                  </div>
+                  <StudentAvatar 
+                    imagePath={selectedStudentDetails.profileImage} 
+                    name={selectedStudentDetails.name} 
+                    size="w-16 h-16" 
+                    iconSize="w-8 h-8" 
+                  />
                   <div>
                     <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">{selectedStudentDetails.name}</h3>
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-slate-400 text-xs mt-1">
