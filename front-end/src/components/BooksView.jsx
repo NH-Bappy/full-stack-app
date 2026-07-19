@@ -287,7 +287,6 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredBooks.map((book) => {
-                  const isPdf = book.coverImage?.toLowerCase().endsWith('.pdf');
                   return (
                     <tr key={book.id} className="hover:bg-slate-55/30 hover:bg-slate-50/50 transition-colors group">
                       <td className="py-4 px-6 flex items-center gap-3.5">
