@@ -20,9 +20,9 @@
 
 // ==========================================
 
-const char* ssid = "BSSN";             // <--- Your WiFi Name
+const char* ssid = "Shadman";             // <--- Your WiFi Name
 
-const char* password = "214Hostel";     // <--- Your WiFi Password
+const char* password = "shadman_1234";     // <--- Your WiFi Password
 
 
 
