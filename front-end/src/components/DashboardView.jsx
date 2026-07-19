@@ -53,13 +53,13 @@ const DashboardView = ({ setActiveTab, navigateToView }) => {
   // Formatting chart data matching the premium Deep Blue & Sky Blue palette
   const pieData = stats ? [
     { name: 'Available Books', value: stats.availableBooks, color: '#0B4262' }, // Deep Blue
-    { name: 'Issued Books', value: stats.issuedBooks, color: '#00A2E8' },       // Sky Blue
+    { name: 'Borrowed Books', value: stats.borrowedBooks, color: '#00A2E8' },       // Sky Blue
   ] : [];
 
   const barData = stats ? [
     { name: 'Total Books', value: stats.totalBooks, fill: '#0B4262' },
     { name: 'Available', value: stats.availableBooks, fill: '#00A2E8' },
-    { name: 'Issued', value: stats.issuedBooks, fill: '#0B4262' },
+    { name: 'Borrowed', value: stats.borrowedBooks, fill: '#0B4262' },
     { name: 'Overdue', value: stats.overdueBooks, fill: '#00A2E8' },
   ] : [];
 
@@ -182,7 +182,7 @@ const DashboardView = ({ setActiveTab, navigateToView }) => {
               variants={cardVariants}
               whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.08)" }}
               className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-pointer hover:shadow-md transition-all duration-300"
-              onClick={() => navigateToView && navigateToView('books', 'issued')}
+              onClick={() => navigateToView && navigateToView('books', 'borrowed')}
             >
               <div className="flex items-start justify-between z-10">
                 <div>
@@ -190,7 +190,7 @@ const DashboardView = ({ setActiveTab, navigateToView }) => {
                     Active Borrows
                   </span>
                   <span className="text-3xl font-black text-[#1e293b] tracking-tight mt-1.5 block">
-                    {stats ? stats.issuedBooks.toLocaleString() : '0'}
+                    {stats ? stats.borrowedBooks.toLocaleString() : '0'}
                   </span>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 text-slate-500">
@@ -199,7 +199,7 @@ const DashboardView = ({ setActiveTab, navigateToView }) => {
               </div>
 
               <div className="border-t border-slate-100 pt-3 mt-4 flex items-center justify-between text-xs z-10">
-                <span className="text-slate-400 font-medium">Currently issued out</span>
+                <span className="text-slate-400 font-medium">Currently borrowed out</span>
                 <Users className="w-3.5 h-3.5 text-slate-400" />
               </div>
             </motion.div>
@@ -376,13 +376,13 @@ const DashboardView = ({ setActiveTab, navigateToView }) => {
                       <th className="py-3 px-4">Student</th>
                       <th className="py-3 px-4">Book Title</th>
                       <th className="py-3 px-4">RFID Code</th>
-                      <th className="py-3 px-4">Issue Date</th>
+                      <th className="py-3 px-4">Borrow Date</th>
                       <th className="py-3 px-4 text-right">Estimated Fine</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {overdueData?.slice(0, 5).map((trans) => {
-                      const overdueDays = Math.max(1, Math.ceil((Date.now() - new Date(trans.issueDate).getTime()) / (1000 * 60 * 60 * 24))) - 7;
+                      const overdueDays = Math.max(1, Math.ceil((Date.now() - new Date(trans.borrowDate).getTime()) / (1000 * 60 * 60 * 24))) - 7;
                       const estimatedFine = overdueDays > 0 ? overdueDays * 10 : 0;
                       
                       return (
@@ -398,7 +398,7 @@ const DashboardView = ({ setActiveTab, navigateToView }) => {
                             </span>
                           </td>
                           <td className="py-3 px-4 text-slate-500 text-xs">
-                            {new Date(trans.issueDate).toLocaleDateString(undefined, { 
+                            {new Date(trans.borrowDate).toLocaleDateString(undefined, { 
                               month: 'short', 
                               day: 'numeric', 
                               year: 'numeric' 

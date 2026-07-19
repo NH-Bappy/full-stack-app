@@ -232,7 +232,7 @@ const ReportsView = () => {
                       <div className="text-[10px] text-slate-400 mt-0.5">RFID: {trans.book.rfidUid}</div>
                     </td>
                     <td className="py-3.5 px-5 text-slate-500">
-                      {new Date(trans.issueDate).toLocaleDateString()}
+                      {new Date(trans.borrowDate).toLocaleDateString()}
                     </td>
                     <td className="py-3.5 px-5">
                       {trans.returnDate ? (

@@ -196,7 +196,7 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
       book.rfidUid.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (filterStatus === 'available') return matchesSearch && book.available;
-    if (filterStatus === 'issued') return matchesSearch && !book.available;
+    if (filterStatus === 'borrowed') return matchesSearch && !book.available;
     return matchesSearch;
   }) || [];
 
@@ -240,7 +240,7 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
         </div>
 
         <div className="flex gap-2 w-full md:w-auto justify-end">
-          {['all', 'available', 'issued'].map((status) => (
+          {['all', 'available', 'borrowed'].map((status) => (
             <button
               key={status}
               onClick={() => handleFilterChange(status)}

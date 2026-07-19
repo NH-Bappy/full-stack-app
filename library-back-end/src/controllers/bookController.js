@@ -56,7 +56,7 @@ export const getBookById = async (req, res) => {
             student: true,
           },
           orderBy: {
-            issueDate: 'desc',
+            borrowDate: 'desc',
           },
         },
       },

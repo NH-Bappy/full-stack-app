@@ -34,14 +34,14 @@ model Transaction {
   id                Int       @id @default(autoincrement())
   studentId         Int
   bookId            Int
-  issueDate         DateTime  @default(now())
+  borrowDate        DateTime  @default(now())
   returnDate        DateTime?
   fine              Float     @default(0)
-  issuedByAdminId   Int?
+  borrowedByAdminId Int?
   returnedByAdminId Int?
   student           Student   @relation(fields: [studentId], references: [id])
   book              Book      @relation(fields: [bookId], references: [id])
-  issuedBy          Admin?    @relation("IssuedByAdmin", fields: [issuedByAdminId], references: [id])
+  borrowedBy        Admin?    @relation("BorrowedByAdmin", fields: [borrowedByAdminId], references: [id])
   returnedBy        Admin?    @relation("ReturnedByAdmin", fields: [returnedByAdminId], references: [id])
 }
 
@@ -49,6 +49,6 @@ model Admin {
   id                    Int           @id @default(autoincrement())
   username              String        @unique
   password              String
-  issuedTransactions    Transaction[] @relation("IssuedByAdmin")
+  borrowedTransactions  Transaction[] @relation("BorrowedByAdmin")
   returnedTransactions  Transaction[] @relation("ReturnedByAdmin")
 }

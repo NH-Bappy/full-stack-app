@@ -4,7 +4,7 @@ import { getIO } from '../utils/socket.js';
 const FINE_PER_DAY = Number(process.env.FINE_PER_DAY) || 10;
 const BORROW_LIMIT_DAYS = Number(process.env.BORROW_LIMIT_DAYS) || 7;
 
-export const issueBook = async (req, res) => {
+export const borrowBook = async (req, res) => {
   const { studentId, studentRfidUid, bookRfidUid } = req.body;
 
   if ((!studentId && !studentRfidUid) || !bookRfidUid) {
@@ -29,7 +29,7 @@ export const issueBook = async (req, res) => {
     }
 
     if (!book.available) {
-      return res.status(409).json({ message: 'Book is already issued' });
+      return res.status(409).json({ message: 'Book is already borrowed' });
     }
 
     const transaction = await prisma.$transaction(async (tx) => {
@@ -37,7 +37,7 @@ export const issueBook = async (req, res) => {
         data: {
           studentId: student.id,
           bookId: book.id,
-          issuedByAdminId: req.admin?.id,
+          borrowedByAdminId: req.admin?.id,
         },
       });
 
@@ -50,19 +50,19 @@ export const issueBook = async (req, res) => {
     });
 
     try {
-      getIO().emit('bookIssued', {
-        message: 'Book issued successfully',
+      getIO().emit('bookBorrowed', {
+        message: 'Book borrowed successfully',
         transaction,
         book,
         student,
       });
     } catch (socketError) {
-      console.error('Failed to emit bookIssued socket event:', socketError.message);
+      console.error('Failed to emit bookBorrowed socket event:', socketError.message);
     }
 
-    res.status(201).json({ message: 'Book issued successfully', transaction });
+    res.status(201).json({ message: 'Book borrowed successfully', transaction });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to issue book', error: error.message });
+    res.status(500).json({ message: 'Failed to borrow book', error: error.message });
   }
 };
 
@@ -81,7 +81,7 @@ export const returnBook = async (req, res) => {
 
     const transaction = await prisma.transaction.findFirst({
       where: { bookId: book.id, returnDate: null },
-      orderBy: { issueDate: 'desc' },
+      orderBy: { borrowDate: 'desc' },
     });
 
     if (!transaction) {
@@ -89,7 +89,7 @@ export const returnBook = async (req, res) => {
     }
 
     const returnDate = new Date();
-    const daysBorrowed = Math.max(1, Math.ceil((returnDate - transaction.issueDate) / (1000 * 60 * 60 * 24)));
+    const daysBorrowed = Math.max(1, Math.ceil((returnDate - transaction.borrowDate) / (1000 * 60 * 60 * 24)));
     const fine = daysBorrowed > BORROW_LIMIT_DAYS ? (daysBorrowed - BORROW_LIMIT_DAYS) * FINE_PER_DAY : 0;
 
     await prisma.$transaction(async (tx) => {
@@ -127,22 +127,22 @@ export const returnBook = async (req, res) => {
 export const getDashboard = async (_req, res) => {
   try {
     const overdueCutoff = new Date(Date.now() - BORROW_LIMIT_DAYS * 24 * 60 * 60 * 1000);
-    const [totalBooks, issuedBooks, totalStudents, overdueBooks] = await Promise.all([
+    const [totalBooks, borrowedBooks, totalStudents, overdueBooks] = await Promise.all([
       prisma.book.count(),
       prisma.book.count({ where: { available: false } }),
       prisma.student.count(),
       prisma.transaction.count({
         where: {
           returnDate: null,
-          issueDate: { lt: overdueCutoff },
+          borrowDate: { lt: overdueCutoff },
         },
       }),
     ]);
 
     res.json({
       totalBooks,
-      issuedBooks,
-      availableBooks: totalBooks - issuedBooks,
+      borrowedBooks,
+      availableBooks: totalBooks - borrowedBooks,
       totalStudents,
       overdueBooks,
     });
@@ -159,7 +159,7 @@ export const getTransactions = async (_req, res) => {
         book: true,
       },
       orderBy: {
-        issueDate: 'desc',
+        borrowDate: 'desc',
       },
     });
 
@@ -175,14 +175,14 @@ export const getOverdueTransactions = async (_req, res) => {
     const transactions = await prisma.transaction.findMany({
       where: {
         returnDate: null,
-        issueDate: { lt: overdueCutoff },
+        borrowDate: { lt: overdueCutoff },
       },
       include: {
         student: true,
         book: true,
       },
       orderBy: {
-        issueDate: 'desc',
+        borrowDate: 'desc',
       },
     });
 

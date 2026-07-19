@@ -1,10 +1,10 @@
 import express from 'express';
-import { issueBook, returnBook, getDashboard, getTransactions, getOverdueTransactions, scanRfid } from '../controllers/libraryController.js';
+import { borrowBook, returnBook, getDashboard, getTransactions, getOverdueTransactions, scanRfid } from '../controllers/libraryController.js';
 import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.post('/issue-book', protect, issueBook);
+router.post('/borrow-book', protect, borrowBook);
 router.post('/return-book', protect, returnBook);
 router.post('/rfid/scan', scanRfid);
 router.get('/dashboard', protect, getDashboard);

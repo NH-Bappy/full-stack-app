@@ -68,8 +68,8 @@ export const getTransactions = async (showOnlyOverdue) => {
   return response.data;
 };
 
-export const issueBook = async (payload) => {
-  const response = await api.post('/issue-book', payload);
+export const borrowBook = async (payload) => {
+  const response = await api.post('/borrow-book', payload);
   return response.data;
 };
 

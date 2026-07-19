@@ -36,7 +36,7 @@ export const getActiveFines = async (_req, res) => {
         book: true,
       },
       orderBy: {
-        issueDate: 'desc',
+        borrowDate: 'desc',
       },
     });
 

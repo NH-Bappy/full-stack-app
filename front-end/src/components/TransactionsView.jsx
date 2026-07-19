@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getBooks, getStudents, getTransactions, issueBook, returnBook } from '../api/libraryApi';
+import { getBooks, getStudents, getTransactions, borrowBook, returnBook } from '../api/libraryApi';
 import { 
   Radio, 
   BookOpen, 
@@ -38,7 +38,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   };
 
   // Operation state
-  const [mode, setMode] = useState('issue'); // issue, return
+  const [mode, setMode] = useState('borrow'); // borrow, return
   const [studentId, setStudentId] = useState('');
   const [studentRfid, setStudentRfid] = useState('');
   const [bookRfid, setBookRfid] = useState('');
@@ -47,7 +47,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   // Refs to avoid stale closures in WebSocket event listeners
   const studentRfidRef = useRef(studentRfid);
   const studentIdRef = useRef(studentId);
-  const issueMutationRef = useRef(null);
+  const borrowMutationRef = useRef(null);
   const returnMutationRef = useRef(null);
 
   // Synchronize state values to refs
@@ -92,8 +92,8 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
       addSocketLog('System connected to live RFID RFID sensor hub.');
     });
 
-    socket.on('bookIssued', (data) => {
-      addSocketLog(`[SCAN] Book "${data.book.title}" (RFID: ${data.book.rfidUid}) ISSUED to ${data.student.name}`);
+    socket.on('bookBorrowed', (data) => {
+      addSocketLog(`[SCAN] Book "${data.book.title}" (RFID: ${data.book.rfidUid}) BORROWED by ${data.student.name}`);
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['books'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
@@ -128,11 +128,11 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
             returnMutationRef.current.mutate({ bookRfidUid: data.rfidUid });
           }
         } else {
-          // Book is available, try to issue it
+          // Book is available, try to borrow it
           if (currentStudentRfid || currentStudentId) {
-            setMessage({ type: 'success', text: `Auto-issuing "${data.book.title}"...` });
-            if (issueMutationRef.current) {
-              issueMutationRef.current.mutate({
+            setMessage({ type: 'success', text: `Auto-borrowing "${data.book.title}"...` });
+            if (borrowMutationRef.current) {
+              borrowMutationRef.current.mutate({
                 studentId: currentStudentId || null,
                 studentRfidUid: currentStudentRfid || null,
                 bookRfidUid: data.rfidUid
@@ -141,7 +141,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
           } else {
             setMessage({ 
               type: 'warning', 
-              text: `Book "${data.book.title}" is available. Scan a student card first to issue it!` 
+              text: `Book "${data.book.title}" is available. Scan a student card first to borrow it!` 
             });
           }
         }
@@ -164,11 +164,11 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
     setSocketLogs((prev) => [{ time: new Date().toLocaleTimeString(), text }, ...prev].slice(0, 15));
   };
 
-  // Issue Book Mutation
-  const issueMutation = useMutation({
-    mutationFn: issueBook,
+  // Borrow Book Mutation
+  const borrowMutation = useMutation({
+    mutationFn: borrowBook,
     onSuccess: (data) => {
-      setMessage({ type: 'success', text: `${data.message || 'Book issued successfully!'} - Confirmed by Administration` });
+      setMessage({ type: 'success', text: `${data.message || 'Book borrowed successfully!'} - Confirmed by Administration` });
       setStudentId('');
       setStudentRfid('');
       setBookRfid('');
@@ -177,14 +177,14 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
     },
     onError: (err) => {
-      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to issue book' });
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to borrow book' });
     }
   });
 
   // Keep mutation ref updated
   useEffect(() => {
-    issueMutationRef.current = issueMutation;
-  }, [issueMutation]);
+    borrowMutationRef.current = borrowMutation;
+  }, [borrowMutation]);
 
   // Return Book Mutation
   const returnMutation = useMutation({
@@ -207,14 +207,14 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
     returnMutationRef.current = returnMutation;
   }, [returnMutation]);
 
-  const handleIssueSubmit = (e) => {
+  const handleBorrowSubmit = (e) => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
     if ((!studentId && !studentRfid) || !bookRfid) {
       setMessage({ type: 'error', text: 'Specify either Student ID or RFID card, and the Book RFID tag.' });
       return;
     }
-    issueMutation.mutate({
+    borrowMutation.mutate({
       studentId: studentId || null,
       studentRfidUid: studentRfid || null,
       bookRfidUid: bookRfid
@@ -234,12 +234,12 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   // Trigger simulated RFID Swipe
   const triggerSimulation = () => {
     setMessage({ type: '', text: '' });
-    if (mode === 'issue') {
+    if (mode === 'borrow') {
       if (!selectedSimStudent || !selectedSimBook) {
-        setMessage({ type: 'error', text: 'Select a student and a book to mock the issue transaction.' });
+        setMessage({ type: 'error', text: 'Select a student and a book to mock the borrow transaction.' });
         return;
       }
-      issueMutation.mutate({
+      borrowMutation.mutate({
         studentRfidUid: selectedSimStudent,
         bookRfidUid: selectedSimBook
       });
@@ -281,17 +281,17 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
             <div className="flex gap-2 p-1 bg-slate-50 border border-slate-200 rounded-xl mb-6">
               <button
                 onClick={() => {
-                  setMode('issue');
+                  setMode('borrow');
                   setMessage({ type: '', text: '' });
                 }}
                 className={`flex-1 py-2.5 rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
-                  mode === 'issue'
+                  mode === 'borrow'
                     ? 'bg-indigo-600 text-white'
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <ArrowRightLeft className="w-3.5 h-3.5" />
-                <span>Issue Book</span>
+                <span>Borrow Book</span>
               </button>
               <button
                 onClick={() => {
@@ -326,8 +326,8 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
             )}
 
             {/* Manual Swipe Form */}
-            <form onSubmit={mode === 'issue' ? handleIssueSubmit : handleReturnSubmit} className="space-y-4">
-              {mode === 'issue' && (
+            <form onSubmit={mode === 'borrow' ? handleBorrowSubmit : handleReturnSubmit} className="space-y-4">
+              {mode === 'borrow' && (
                 <>
                   <div>
                     <label className="block text-slate-505 text-slate-505 text-slate-500 text-xs font-semibold mb-1.5">Student identifier</label>
@@ -373,10 +373,10 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
 
               <button
                 type="submit"
-                disabled={issueMutation.isPending || returnMutation.isPending}
+                disabled={borrowMutation.isPending || returnMutation.isPending}
                 className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-600/10 cursor-pointer flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
               >
-                {issueMutation.isPending || returnMutation.isPending ? (
+                {borrowMutation.isPending || returnMutation.isPending ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
@@ -390,7 +390,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
             <div className="border-t border-slate-100 pt-6 mt-6">
               <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">RFID Scanner Simulator</h4>
               <div className="space-y-3.5 bg-slate-50 border border-slate-200 p-4 rounded-xl">
-                {mode === 'issue' && (
+                {mode === 'borrow' && (
                   <div>
                     <label className="block text-slate-500 text-[10px] uppercase font-bold mb-1">Select Simulated Student Card</label>
                     <select
@@ -415,7 +415,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
                   >
                     <option value="">-- Choose Book Tag --</option>
                     {books?.map(b => (
-                      <option key={b.id} value={b.rfidUid} disabled={mode === 'issue' && !b.available}>
+                      <option key={b.id} value={b.rfidUid} disabled={mode === 'borrow' && !b.available}>
                         {b.title} ({b.rfidUid}) {!b.available ? '[Checked Out]' : ''}
                       </option>
                     ))}
@@ -425,7 +425,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
                 <button
                   type="button"
                   onClick={triggerSimulation}
-                  disabled={issueMutation.isPending || returnMutation.isPending}
+                  disabled={borrowMutation.isPending || returnMutation.isPending}
                   className="w-full py-2 bg-white hover:bg-slate-50 text-indigo-600 text-xs font-bold rounded-lg cursor-pointer flex items-center justify-center gap-1.5 transition-all border border-indigo-500/20 hover:border-indigo-500/35"
                 >
                   <Terminal className="w-3.5 h-3.5 text-indigo-650" />
@@ -465,7 +465,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
               <div>
                 <h3 className="text-base font-bold text-slate-800">Operations Auditing Log</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Chronological record of issue and return events.</p>
+                <p className="text-xs text-slate-500 mt-0.5">Chronological record of borrow and return events.</p>
               </div>
               <button
                 onClick={() => refetchTransactions()}
@@ -512,7 +512,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
               <div className="text-center py-16 text-slate-400 border border-dashed border-slate-200 rounded-xl my-auto">
                 <Calendar className="w-10 h-10 text-slate-300 mx-auto mb-2" />
                 <span className="block font-semibold">No transactions registered</span>
-                <span className="block text-xs text-slate-400 mt-1">Issue a book using the console to create an audit record.</span>
+                <span className="block text-xs text-slate-400 mt-1">Borrow a book using the console to create an audit record.</span>
               </div>
             ) : (
               <div className="overflow-y-auto max-h-[500px] border border-slate-200 rounded-xl">
@@ -521,7 +521,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
                     <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-bold uppercase tracking-wider">
                       <th className="py-3 px-4">Student</th>
                       <th className="py-3 px-4">Book</th>
-                      <th className="py-3 px-4">Issue / Return</th>
+                      <th className="py-3 px-4">Borrow / Return</th>
                       <th className="py-3 px-4 text-right">Fine</th>
                     </tr>
                   </thead>
@@ -538,9 +538,9 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
                         </td>
                         <td className="py-3 px-4 space-y-1">
                           <div className="flex items-center gap-1 text-[10px]">
-                            <span className="text-indigo-600 font-bold uppercase tracking-widest text-[8px]">Issued</span>
+                            <span className="text-indigo-600 font-bold uppercase tracking-widest text-[8px]">Borrowed</span>
                             <span className="text-slate-500">
-                              {new Date(trans.issueDate).toLocaleDateString()}
+                              {new Date(trans.borrowDate).toLocaleDateString()}
                             </span>
                           </div>
                           <div className="flex items-center gap-1 text-[10px]">
