@@ -20,7 +20,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'books', label: 'Books', icon: BookOpen },
     { id: 'students', label: 'Students', icon: Users },
-    { id: 'borrowers', label: 'Borrowers', icon: UserCheck },
+    { id: 'borrowers', label: 'Borrower Items', icon: UserCheck },
     { id: 'transactions', label: 'RFID Console', icon: Radio },
     { id: 'reports', label: 'Analytics & Reports', icon: BarChart3 },
   ];
@@ -54,8 +54,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               onClick={() => setActiveTab(item.id)}
               whileTap={{ scale: 0.97 }}
               className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-colors duration-200 cursor-pointer relative ${isActive
-                  ? 'text-white'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50/50'
+                ? 'text-white'
+                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50/50'
                 }`}
             >
               {isActive && (
