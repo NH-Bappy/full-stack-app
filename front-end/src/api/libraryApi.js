@@ -100,6 +100,11 @@ export const getActiveFines = async () => {
   return response.data;
 };
 
+export const getBorrowingStudents = async () => {
+  const response = await api.get('/students/borrowers');
+  return response.data;
+};
+
 export const seedDemoData = async () => {
   const response = await api.post('/demo/seed-demo');
   return response.data;

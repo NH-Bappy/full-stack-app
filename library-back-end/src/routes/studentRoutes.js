@@ -8,6 +8,7 @@ import {
   getStudentById,
   updateStudent,
   deleteStudent,
+  getBorrowingStudents,
 } from '../controllers/studentController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -47,6 +48,7 @@ const upload = multer({
 
 router.get('/', protect, getStudents);
 router.post('/', protect, upload.single('profileImage'), createStudent);
+router.get('/borrowers', protect, getBorrowingStudents);
 router.get('/:id', protect, getStudentById);
 router.put('/:id', protect, upload.single('profileImage'), updateStudent);
 router.delete('/:id', protect, deleteStudent);

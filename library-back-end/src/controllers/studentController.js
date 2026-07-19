@@ -117,3 +117,32 @@ export const deleteStudent = async (req, res) => {
     res.status(500).json({ message: 'Failed to delete student', error: error.message });
   }
 };
+
+export const getBorrowingStudents = async (_req, res) => {
+  try {
+    const students = await prisma.student.findMany({
+      where: {
+        active: true,
+        transactions: {
+          some: {},
+        },
+      },
+      include: {
+        transactions: {
+          include: {
+            book: true,
+          },
+          orderBy: {
+            borrowDate: 'desc',
+          },
+        },
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+    res.json(students);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch borrowing students', error: error.message });
+  }
+};

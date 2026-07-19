@@ -6,6 +6,7 @@ import LoginView from './components/LoginView';
 import DashboardView from './components/DashboardView';
 import BooksView from './components/BooksView';
 import StudentsView from './components/StudentsView';
+import BorrowersView from './components/BorrowersView';
 import TransactionsView from './components/TransactionsView';
 import ReportsView from './components/ReportsView';
 
@@ -48,6 +49,8 @@ function App() {
         return <BooksView initialFilter={booksFilter} setInitialFilter={setBooksFilter} />;
       case 'students':
         return <StudentsView />;
+      case 'borrowers':
+        return <BorrowersView />;
       case 'transactions':
         return <TransactionsView initialShowOverdue={transactionsFilter} setInitialShowOverdue={setTransactionsFilter} />;
       case 'reports':

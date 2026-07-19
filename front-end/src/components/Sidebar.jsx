@@ -9,7 +9,8 @@ import {
   Radio, 
   BarChart3, 
   LogOut, 
-  User
+  User,
+  UserCheck
 } from 'lucide-react';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
@@ -19,6 +20,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'books', label: 'Books Catalog', icon: BookOpen },
     { id: 'students', label: 'Students', icon: Users },
+    { id: 'borrowers', label: 'Borrowers', icon: UserCheck },
     { id: 'transactions', label: 'RFID Console', icon: Radio },
     { id: 'reports', label: 'Analytics & Reports', icon: BarChart3 },
   ];
