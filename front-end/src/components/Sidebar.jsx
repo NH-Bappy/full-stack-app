@@ -34,7 +34,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         </div>
         <div>
           <span className="font-extrabold text-slate-800 text-[13px] tracking-tight block leading-none">
-            GGAI <span className="text-[#0B4262]">RFID</span>
+            GGAI
           </span>
           <span className="text-[9px] text-[#0B4262] uppercase tracking-wider font-bold mt-1 block">
             Graphic Arts Inst.
