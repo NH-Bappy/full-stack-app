@@ -37,13 +37,18 @@ const BorrowersView = () => {
     return student.transactions.filter(t => !t.returnDate).length;
   };
 
+  const getReturnedBorrowsCount = (student) => {
+    return student.transactions.filter(t => t.returnDate).length;
+  };
+
   // Filter students based on selection and search query
   const filteredStudents = students?.filter(student => {
     const activeBorrows = getActiveBorrowsCount(student);
+    const returnedBorrows = getReturnedBorrowsCount(student);
     const matchesFilter = 
       filterStatus === 'all' ? true :
       filterStatus === 'active' ? activeBorrows > 0 :
-      filterStatus === 'completed' ? activeBorrows === 0 : true;
+      filterStatus === 'returned' ? returnedBorrows > 0 : true;
 
     const matchesSearch = 
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -83,7 +88,7 @@ const BorrowersView = () => {
           {[
             { id: 'all', label: 'All Borrowers' },
             { id: 'active', label: 'Active Borrowers' },
-            { id: 'completed', label: 'Returned All' }
+            { id: 'returned', label: 'Returned Books' }
           ].map((tab) => (
             <button
               key={tab.id}
