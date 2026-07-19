@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../api/axios';
+import { getBooks, createBook, updateBook, deleteBook } from '../api/libraryApi';
 import { io } from 'socket.io-client';
 import {
   Search,
@@ -72,18 +72,12 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
   // Fetch Books
   const { data: books, isLoading, error } = useQuery({
     queryKey: ['books'],
-    queryFn: async () => {
-      const response = await api.get('/books');
-      return response.data;
-    },
+    queryFn: getBooks,
   });
 
   // Create Book Mutation
   const createMutation = useMutation({
-    mutationFn: async (newBook) => {
-      const response = await api.post('/books', newBook);
-      return response.data;
-    },
+    mutationFn: createBook,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['books'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
@@ -100,10 +94,7 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
 
   // Update Book Mutation
   const updateMutation = useMutation({
-    mutationFn: async ({ id, updatedData }) => {
-      const response = await api.put(`/books/${id}`, updatedData);
-      return response.data;
-    },
+    mutationFn: updateBook,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['books'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
@@ -120,10 +111,7 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter }) => {
 
   // Delete Book Mutation
   const deleteMutation = useMutation({
-    mutationFn: async (id) => {
-      const response = await api.delete(`/books/${id}`);
-      return response.data;
-    },
+    mutationFn: deleteBook,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['books'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });

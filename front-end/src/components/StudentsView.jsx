@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../api/axios';
+import { getStudents, createStudent, updateStudent, deleteStudent } from '../api/libraryApi';
 import { io } from 'socket.io-client';
 import { 
   Search, 
@@ -66,22 +66,12 @@ const StudentsView = () => {
   // Fetch Students
   const { data: students, isLoading, error } = useQuery({
     queryKey: ['students'],
-    queryFn: async () => {
-      const response = await api.get('/students');
-      return response.data;
-    },
+    queryFn: getStudents,
   });
 
   // Create Student Mutation
   const createMutation = useMutation({
-    mutationFn: async (formData) => {
-      const response = await api.post('/students', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response.data;
-    },
+    mutationFn: createStudent,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
@@ -98,14 +88,7 @@ const StudentsView = () => {
 
   // Update Student Mutation
   const updateMutation = useMutation({
-    mutationFn: async ({ id, formData }) => {
-      const response = await api.put(`/students/${id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response.data;
-    },
+    mutationFn: updateStudent,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
@@ -122,10 +105,7 @@ const StudentsView = () => {
 
   // Delete Student Mutation
   const deleteMutation = useMutation({
-    mutationFn: async (id) => {
-      const response = await api.delete(`/students/${id}`);
-      return response.data;
-    },
+    mutationFn: deleteStudent,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });

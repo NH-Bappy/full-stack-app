@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../api/axios';
+import { getTopBorrowedBooks, getActiveFines, seedDemoData } from '../api/libraryApi';
 import { 
   BarChart, 
   Bar, 
@@ -30,27 +30,18 @@ const ReportsView = () => {
   // Fetch top borrowed books
   const { data: topBooks, isLoading: loadingTopBooks, refetch: refetchTopBooks } = useQuery({
     queryKey: ['reportsTopBorrowed'],
-    queryFn: async () => {
-      const response = await api.get('/reports/top-borrowed');
-      return response.data;
-    }
+    queryFn: getTopBorrowedBooks,
   });
 
   // Fetch active fines
   const { data: activeFines, isLoading: loadingFines, refetch: refetchFines } = useQuery({
     queryKey: ['reportsActiveFines'],
-    queryFn: async () => {
-      const response = await api.get('/reports/active-fines');
-      return response.data;
-    }
+    queryFn: getActiveFines,
   });
 
   // Demo Seeding Mutation
   const seedMutation = useMutation({
-    mutationFn: async () => {
-      const response = await api.post('/demo/seed-demo');
-      return response.data;
-    },
+    mutationFn: seedDemoData,
     onSuccess: (data) => {
       setSeedSuccess('Demo database seeded successfully with mock students, books, and admin user!');
       setSeedError('');

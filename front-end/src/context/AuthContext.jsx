@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import api from '../api/axios';
+import { loginAdmin, registerAdmin } from '../api/libraryApi';
 
 const AuthContext = createContext(null);
 
@@ -24,8 +24,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      const response = await api.post('/auth/login', { username, password });
-      const { token, admin: adminData } = response.data;
+      const data = await loginAdmin(username, password);
+      const { token, admin: adminData } = data;
       
       localStorage.setItem('library_admin_token', token);
       localStorage.setItem('library_admin', JSON.stringify(adminData));
@@ -40,8 +40,8 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, password) => {
     try {
-      const response = await api.post('/auth/register', { username, password });
-      return { success: true, message: response.data.message };
+      const data = await registerAdmin(username, password);
+      return { success: true, message: data.message };
     } catch (error) {
       console.error('Registration error:', error);
       const message = error.response?.data?.message || 'Registration failed. Username may be taken.';

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../api/axios';
+import { getBooks, getStudents, getTransactions, issueBook, returnBook } from '../api/libraryApi';
 import { 
   Radio, 
   BookOpen, 
@@ -69,28 +69,18 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   // Fetch registered books & students for the simulator dropdowns
   const { data: books } = useQuery({
     queryKey: ['books'],
-    queryFn: async () => {
-      const response = await api.get('/books');
-      return response.data;
-    }
+    queryFn: getBooks,
   });
 
   const { data: students } = useQuery({
     queryKey: ['students'],
-    queryFn: async () => {
-      const response = await api.get('/students');
-      return response.data;
-    }
+    queryFn: getStudents,
   });
 
   // Fetch transactions list
   const { data: transactions, isLoading, refetch: refetchTransactions } = useQuery({
     queryKey: ['transactions', showOnlyOverdue],
-    queryFn: async () => {
-      const endpoint = showOnlyOverdue ? '/transactions/overdue' : '/transactions';
-      const response = await api.get(endpoint);
-      return response.data;
-    }
+    queryFn: () => getTransactions(showOnlyOverdue),
   });
 
   // Websocket client setup
@@ -176,10 +166,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
 
   // Issue Book Mutation
   const issueMutation = useMutation({
-    mutationFn: async (payload) => {
-      const response = await api.post('/issue-book', payload);
-      return response.data;
-    },
+    mutationFn: issueBook,
     onSuccess: (data) => {
       setMessage({ type: 'success', text: `${data.message || 'Book issued successfully!'} - Confirmed by Administration` });
       setStudentId('');
@@ -201,10 +188,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
 
   // Return Book Mutation
   const returnMutation = useMutation({
-    mutationFn: async (payload) => {
-      const response = await api.post('/return-book', payload);
-      return response.data;
-    },
+    mutationFn: returnBook,
     onSuccess: (data) => {
       const fineText = data.fine > 0 ? ` Fine due: ৳${data.fine}` : '';
       setMessage({ type: 'success', text: `${data.message || 'Book returned successfully!'}${fineText} - Confirmed by Administration` });

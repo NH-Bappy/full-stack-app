@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import api from '../api/axios';
+import { getDashboard, getOverdueTransactions } from '../api/libraryApi';
 import { motion } from 'framer-motion';
 import { 
   BookOpen, 
@@ -34,15 +34,7 @@ const DashboardView = ({ setActiveTab, navigateToView }) => {
     refetch: refetchStats 
   } = useQuery({
     queryKey: ['dashboardStats'],
-    queryFn: async () => {
-      try {
-        const response = await api.get('/dashboard');
-        return response.data;
-      } catch (err) {
-        console.error('Failed to fetch dashboard statistics:', err);
-        throw err;
-      }
-    },
+    queryFn: getDashboard,
     refetchInterval: 10000, // Refetch every 10 seconds to keep live
   });
 
@@ -53,15 +45,7 @@ const DashboardView = ({ setActiveTab, navigateToView }) => {
     error: overdueError 
   } = useQuery({
     queryKey: ['overdueTransactions'],
-    queryFn: async () => {
-      try {
-        const response = await api.get('/transactions/overdue');
-        return response.data;
-      } catch (err) {
-        console.error('Failed to fetch overdue transactions:', err);
-        throw err;
-      }
-    },
+    queryFn: getOverdueTransactions,
   });
 
   const isLoading = statsLoading || overdueLoading;
