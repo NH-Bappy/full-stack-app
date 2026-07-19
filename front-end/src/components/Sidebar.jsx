@@ -20,8 +20,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'books', label: 'Books', icon: BookOpen },
     { id: 'students', label: 'Students', icon: Users },
-    { id: 'borrowers', label: 'Borrower Items', icon: UserCheck },
-    { id: 'transactions', label: 'RFID Console', icon: Radio },
+    { id: 'borrowers', label: 'Borrowed Items', icon: UserCheck },
+    { id: 'transactions', label: 'Transactions', icon: Radio },
     { id: 'reports', label: 'Analytics & Reports', icon: BarChart3 },
   ];
 
