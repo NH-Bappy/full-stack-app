@@ -20,22 +20,6 @@ import {
 const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Handle scanned RFID redirection
-  useEffect(() => {
-    if (scannedRfid) {
-      setFormRfidUid(scannedRfid);
-      setIsAddOpen(true);
-      if (clearScannedRfid) clearScannedRfid();
-    }
-  }, [scannedRfid, clearScannedRfid]);
-
-  // Track if any form modal is open
-  useEffect(() => {
-    if (setIsFormOpen) {
-      setIsFormOpen(isAddOpen || isEditOpen || isDeleteOpen);
-    }
-  }, [isAddOpen, isEditOpen, isDeleteOpen, setIsFormOpen]);
   
   // Modals state
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -56,6 +40,22 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
   // Errors & success
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
+
+  // Handle scanned RFID redirection
+  useEffect(() => {
+    if (scannedRfid) {
+      setFormRfidUid(scannedRfid);
+      setIsAddOpen(true);
+      if (clearScannedRfid) clearScannedRfid();
+    }
+  }, [scannedRfid, clearScannedRfid]);
+
+  // Track if any form modal is open
+  useEffect(() => {
+    if (setIsFormOpen) {
+      setIsFormOpen(isAddOpen || isEditOpen || isDeleteOpen);
+    }
+  }, [isAddOpen, isEditOpen, isDeleteOpen, setIsFormOpen]);
 
   // Auto-fill RFID from hardware scans when registration modal is open
   useEffect(() => {

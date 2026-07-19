@@ -27,22 +27,6 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter, scannedRfid, clear
     setFilterStatus(initialFilter);
   }, [initialFilter]);
 
-  // Handle scanned RFID redirection
-  useEffect(() => {
-    if (scannedRfid) {
-      setFormRfidUid(scannedRfid);
-      setIsAddOpen(true);
-      if (clearScannedRfid) clearScannedRfid();
-    }
-  }, [scannedRfid, clearScannedRfid]);
-
-  // Track if any form modal is open
-  useEffect(() => {
-    if (setIsFormOpen) {
-      setIsFormOpen(isAddOpen || isEditOpen || isDeleteOpen);
-    }
-  }, [isAddOpen, isEditOpen, isDeleteOpen, setIsFormOpen]);
-
   const handleFilterChange = (status) => {
     setFilterStatus(status);
     if (setInitialFilter) {
@@ -68,6 +52,22 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter, scannedRfid, clear
   // Errors & success
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
+
+  // Handle scanned RFID redirection
+  useEffect(() => {
+    if (scannedRfid) {
+      setFormRfidUid(scannedRfid);
+      setIsAddOpen(true);
+      if (clearScannedRfid) clearScannedRfid();
+    }
+  }, [scannedRfid, clearScannedRfid]);
+
+  // Track if any form modal is open
+  useEffect(() => {
+    if (setIsFormOpen) {
+      setIsFormOpen(isAddOpen || isEditOpen || isDeleteOpen);
+    }
+  }, [isAddOpen, isEditOpen, isDeleteOpen, setIsFormOpen]);
 
   // Auto-fill RFID from hardware scans when add book modal is open
   useEffect(() => {
