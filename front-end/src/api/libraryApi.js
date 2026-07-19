@@ -114,3 +114,8 @@ export const deleteTransaction = async (id) => {
   const response = await api.delete(`/transactions/${id}`);
   return response.data;
 };
+
+export const getStudentById = async (id) => {
+  const response = await api.get(`/students/${id}`);
+  return response.data;
+};

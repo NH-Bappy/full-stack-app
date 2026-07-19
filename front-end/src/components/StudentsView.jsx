@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getStudents, createStudent, updateStudent, deleteStudent } from '../api/libraryApi';
+import { getStudents, createStudent, updateStudent, deleteStudent, getStudentById } from '../api/libraryApi';
 import { io } from 'socket.io-client';
 import { 
   Search, 
@@ -14,7 +14,9 @@ import {
   Mail,
   User,
   Barcode,
-  IdCard
+  IdCard,
+  BookOpen,
+  Calendar
 } from 'lucide-react';
 
 const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
@@ -28,6 +30,27 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
   
   // Selected Student for Edit/Delete
   const [selectedStudent, setSelectedStudent] = useState(null);
+  
+  // Student Details Modal state
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [selectedStudentDetails, setSelectedStudentDetails] = useState(null);
+  const [isDetailsLoading, setIsDetailsLoading] = useState(false);
+  const [detailsError, setDetailsError] = useState('');
+
+  const handleShowDetails = async (studentId) => {
+    setIsDetailsLoading(true);
+    setDetailsError('');
+    setIsDetailsOpen(true);
+    setSelectedStudentDetails(null);
+    try {
+      const data = await getStudentById(studentId);
+      setSelectedStudentDetails(data);
+    } catch (err) {
+      setDetailsError(err.response?.data?.message || 'Failed to load student transaction history.');
+    } finally {
+      setIsDetailsLoading(false);
+    }
+  };
   
   // Form states
   const [formFirstName, setFormFirstName] = useState('');
@@ -284,7 +307,10 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
               <tbody className="divide-y divide-slate-100">
                 {filteredStudents.map((student) => (
                   <tr key={student.id} className="hover:bg-slate-50/70 transition-colors group">
-                    <td className="py-4 px-6 flex items-center gap-3.5">
+                    <td 
+                      onClick={() => handleShowDetails(student.id)}
+                      className="py-4 px-6 flex items-center gap-3.5 cursor-pointer"
+                    >
                       {/* Student Profile Thumbnail */}
                       <div className="w-10 h-10 rounded-full border border-slate-200 bg-slate-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
                         {student.profileImage ? (
@@ -302,7 +328,7 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
                         )}
                       </div>
                       <div>
-                        <div className="font-bold text-slate-850 text-slate-800 group-hover:text-indigo-600 transition-colors">
+                        <div className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">
                           {student.name}
                         </div>
                       </div>
@@ -625,6 +651,146 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
                 {deleteMutation.isPending ? 'Removing...' : 'Delete'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Student Details Dialog */}
+      {isDetailsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white w-full max-w-2xl rounded-2xl p-6 shadow-2xl relative animate-fade-in-up border border-slate-200 max-h-[85vh] flex flex-col">
+            <button
+              onClick={() => {
+                setIsDetailsOpen(false);
+                setSelectedStudentDetails(null);
+              }}
+              className="absolute top-4 right-4 p-1.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-700 transition-all cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {isDetailsLoading ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="w-10 h-10 border-4 border-[#0B4262] border-t-transparent rounded-full animate-spin mb-4" />
+                <span className="text-sm font-semibold text-slate-500">Fetching transaction logs...</span>
+              </div>
+            ) : detailsError ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <AlertCircle className="w-12 h-12 text-red-500 mb-3" />
+                <p className="text-sm font-bold text-slate-800">{detailsError}</p>
+              </div>
+            ) : selectedStudentDetails ? (
+              <div className="flex-1 overflow-y-auto pr-1 space-y-6">
+                {/* Header Profile */}
+                <div className="flex items-center gap-4 border-b border-slate-100 pb-5">
+                  <div className="w-16 h-16 rounded-full border border-slate-200 bg-slate-50 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                    {selectedStudentDetails.profileImage ? (
+                      <img
+                        src={getMediaUrl(selectedStudentDetails.profileImage)}
+                        alt={selectedStudentDetails.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=60';
+                        }}
+                      />
+                    ) : (
+                      <User className="w-8 h-8 text-slate-400" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">{selectedStudentDetails.name}</h3>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-slate-400 text-xs mt-1">
+                      <span>ID: <strong className="text-slate-650">{selectedStudentDetails.studentId}</strong></span>
+                      <span>•</span>
+                      <span>RFID: <strong className="text-slate-600 font-mono">{selectedStudentDetails.rfidUid}</strong></span>
+                      {selectedStudentDetails.email && (
+                        <>
+                          <span>•</span>
+                          <span>{selectedStudentDetails.email}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Statistics Grid */}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Borrowing Summary</h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl text-center shadow-sm">
+                      <div className="text-2xl font-extrabold text-slate-800">
+                        {selectedStudentDetails.transactions.length}
+                      </div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Total Borrowed</div>
+                    </div>
+                    <div className="bg-indigo-50/50 border border-indigo-100/40 p-4 rounded-xl text-center shadow-sm">
+                      <div className="text-2xl font-extrabold text-[#0B4262]">
+                        {selectedStudentDetails.transactions.filter(t => !t.returnDate).length}
+                      </div>
+                      <div className="text-[10px] font-bold text-[#0B4262] uppercase tracking-wider mt-1">Active Holds</div>
+                    </div>
+                    <div className="bg-emerald-50/50 border border-emerald-100/40 p-4 rounded-xl text-center shadow-sm">
+                      <div className="text-2xl font-extrabold text-emerald-600">
+                        {selectedStudentDetails.transactions.filter(t => t.returnDate).length}
+                      </div>
+                      <div className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mt-1">Returned Books</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Transactions Table */}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Transaction Records</h4>
+                  {selectedStudentDetails.transactions.length === 0 ? (
+                    <div className="text-center py-10 border border-dashed border-slate-200 rounded-xl text-slate-400">
+                      <BookOpen className="w-8 h-8 mx-auto mb-2 text-slate-350" />
+                      <span className="text-xs font-bold">No borrow logs found for this student.</span>
+                    </div>
+                  ) : (
+                    <div className="border border-slate-200 rounded-xl overflow-hidden max-h-[300px] overflow-y-auto">
+                      <table className="w-full text-left text-xs text-slate-600">
+                        <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                          <tr className="border-b border-slate-200">
+                            <th className="py-2.5 px-4">Book Title</th>
+                            <th className="py-2.5 px-4">Borrow Date</th>
+                            <th className="py-2.5 px-4">Return Date</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {selectedStudentDetails.transactions.map((trans) => (
+                            <tr key={trans.id} className="hover:bg-slate-50/50">
+                              <td className="py-3 px-4">
+                                <div className="font-bold text-slate-800 line-clamp-1">{trans.book.title}</div>
+                                <div className="text-[9px] font-mono text-slate-400 mt-0.5">{trans.book.rfidUid}</div>
+                              </td>
+                              <td className="py-3 px-4 text-slate-500">
+                                <div className="flex items-center gap-1.5">
+                                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                                  <span>{new Date(trans.borrowDate).toLocaleDateString()}</span>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                {trans.returnDate ? (
+                                  <span className="text-slate-500 flex items-center gap-1.5">
+                                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                                    <span>{new Date(trans.returnDate).toLocaleDateString()}</span>
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-0.5 text-[9px] font-bold text-indigo-650 bg-indigo-50 border border-indigo-100 rounded-full">
+                                    Active Hold
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       )}
