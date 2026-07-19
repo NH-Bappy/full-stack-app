@@ -28,8 +28,7 @@ const char* password = "shadman_1234";     // <--- Your WiFi Password
 
 // Backend server URL. Replace with your computer's current local IP address.
 // Your computer's current active local IPs: 192.168.0.102 (Ethernet) or 192.168.0.105 (Wi-Fi).
-// NOTE: Do NOT use "localhost" or "127.0.0.1" as they refer to the ESP32 itself!
-const char* serverUrl = "http://192.168.0.102:3000/api/rfid/scan";
+const char* serverUrl = "https://full-stack-app-kndy.onrender.com/api/rfid/scan";
 
 
 
