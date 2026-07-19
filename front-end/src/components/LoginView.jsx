@@ -59,7 +59,7 @@ const LoginView = () => {
             <img src={logo} alt="GGAI Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 mb-1">
-            GGAI <span className="text-indigo-650 text-indigo-600">RFID</span>
+            G.G.A.I Library
           </h1>
           <p className="text-slate-500 text-sm">Govt. Graphic Arts Institute RFID Terminal</p>
         </div>
