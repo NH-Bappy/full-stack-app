@@ -34,7 +34,7 @@ export const createStudent = async (req, res) => {
       return res.status(409).json({ message: `${field} is already registered` });
     }
 
-    const profileImagePath = req.file ? '/uploads/' + req.file.filename : '';
+    const profileImagePath = req.file ? req.file.path : '';
 
     const student = await prisma.student.create({
       data: { name, studentId, email, rfidUid, profileImage: profileImagePath },
@@ -82,7 +82,7 @@ export const updateStudent = async (req, res) => {
     const updatedData = { name, studentId, email };
 
     if (req.file) {
-      updatedData.profileImage = '/uploads/' + req.file.filename;
+      updatedData.profileImage = req.file.path;
     }
 
     const student = await prisma.student.update({
