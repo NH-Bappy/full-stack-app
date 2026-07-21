@@ -1,35 +1,4 @@
 import { prisma } from '../config/db.js';
-import { v2 as cloudinary } from 'cloudinary';
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-const deleteFromCloudinary = (url) => {
-  if (!url || !url.includes('cloudinary.com')) return;
-
-  try {
-    const parts = url.split('/upload/');
-    if (parts.length < 2) return;
-    
-    const pathParts = parts[1].split('/');
-    if (pathParts[0].startsWith('v')) {
-      pathParts.shift();
-    }
-    
-    const fullPath = pathParts.join('/');
-    const lastDotIndex = fullPath.lastIndexOf('.');
-    const publicId = lastDotIndex === -1 ? fullPath : fullPath.substring(0, lastDotIndex);
-
-    cloudinary.uploader.destroy(publicId)
-      .then(result => console.log('Cloudinary image deleted:', publicId, result))
-      .catch(err => console.error('Failed to delete Cloudinary image:', publicId, err));
-  } catch (error) {
-    console.error('Error parsing Cloudinary URL for deletion:', error);
-  }
-};
 
 export const getStudents = async (_req, res) => {
   try {
@@ -65,10 +34,8 @@ export const createStudent = async (req, res) => {
       return res.status(409).json({ message: `${field} is already registered` });
     }
 
-    const profileImagePath = req.file ? req.file.path : '';
-
     const student = await prisma.student.create({
-      data: { name, studentId, email, rfidUid, profileImage: profileImagePath },
+      data: { name, studentId, email, rfidUid, profileImage: "" },
     });
 
     res.status(201).json(student);
@@ -112,22 +79,12 @@ export const updateStudent = async (req, res) => {
   try {
     const updatedData = { name, studentId, email };
 
-    // Fetch existing student details to check for old image
     const existingStudent = await prisma.student.findUnique({
       where: { id: Number(id) }
     });
 
     if (!existingStudent) {
       return res.status(404).json({ message: 'Student not found' });
-    }
-
-    if (req.file) {
-      updatedData.profileImage = req.file.path;
-      
-      // Delete old profile image from Cloudinary in the background
-      if (existingStudent.profileImage) {
-        deleteFromCloudinary(existingStudent.profileImage);
-      }
     }
 
     const student = await prisma.student.update({
@@ -147,7 +104,6 @@ export const deleteStudent = async (req, res) => {
   try {
     const studentIdNum = Number(id);
 
-    // Find student first to retrieve profileImage
     const student = await prisma.student.findUnique({
       where: { id: studentIdNum }
     });
@@ -165,11 +121,6 @@ export const deleteStudent = async (req, res) => {
     await prisma.student.delete({
       where: { id: studentIdNum },
     });
-
-    // 3. Delete profile image from Cloudinary in the background
-    if (student.profileImage) {
-      deleteFromCloudinary(student.profileImage);
-    }
 
     res.json({ message: 'Student deleted successfully' });
   } catch (error) {

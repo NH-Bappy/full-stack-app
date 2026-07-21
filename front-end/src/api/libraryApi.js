@@ -38,21 +38,13 @@ export const getStudents = async () => {
   return response.data;
 };
 
-export const createStudent = async (formData) => {
-  const response = await api.post('/students', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+export const createStudent = async (studentData) => {
+  const response = await api.post('/students', studentData);
   return response.data;
 };
 
-export const updateStudent = async ({ id, formData }) => {
-  const response = await api.put(`/students/${id}`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+export const updateStudent = async ({ id, studentData }) => {
+  const response = await api.put(`/students/${id}`, studentData);
   return response.data;
 };
 

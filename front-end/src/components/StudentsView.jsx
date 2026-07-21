@@ -90,7 +90,6 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
   const [formStudentId, setFormStudentId] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formRfidUid, setFormRfidUid] = useState('');
-  const [profileFile, setProfileFile] = useState(null);
   
   // Errors & success
   const [formError, setFormError] = useState('');
@@ -188,7 +187,6 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
     setFormStudentId('');
     setFormEmail('');
     setFormRfidUid('');
-    setProfileFile(null);
     setFormError('');
     setFormSuccess('');
     setSelectedStudent(null);
@@ -202,16 +200,14 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('name', `${formFirstName.trim()} ${formLastName.trim()}`);
-    formData.append('studentId', formStudentId);
-    if (formEmail) formData.append('email', formEmail);
-    formData.append('rfidUid', formRfidUid);
-    if (profileFile) {
-      formData.append('profileImage', profileFile);
-    }
+    const studentData = {
+      name: `${formFirstName.trim()} ${formLastName.trim()}`,
+      studentId: formStudentId,
+      rfidUid: formRfidUid,
+    };
+    if (formEmail) studentData.email = formEmail;
 
-    createMutation.mutate(formData);
+    createMutation.mutate(studentData);
   };
 
   const handleEditSubmit = (e) => {
@@ -222,18 +218,16 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('name', `${formFirstName.trim()} ${formLastName.trim()}`);
-    formData.append('studentId', formStudentId);
-    if (formEmail) formData.append('email', formEmail);
-    formData.append('rfidUid', formRfidUid);
-    if (profileFile) {
-      formData.append('profileImage', profileFile);
-    }
+    const studentData = {
+      name: `${formFirstName.trim()} ${formLastName.trim()}`,
+      studentId: formStudentId,
+      rfidUid: formRfidUid,
+    };
+    if (formEmail) studentData.email = formEmail;
 
     updateMutation.mutate({
       id: selectedStudent.id,
-      formData: formData
+      studentData: studentData
     });
   };
 
@@ -247,7 +241,6 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
     setFormStudentId(student.studentId);
     setFormEmail(student.email || '');
     setFormRfidUid(student.rfidUid);
-    setProfileFile(null);
     setIsEditOpen(true);
   };
 
@@ -479,16 +472,7 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-500 text-xs font-semibold mb-1.5">Profile Image</label>
-                <input
-                  type="file"
-                  accept=".png,.jpg,.jpeg"
-                  onChange={(e) => setProfileFile(e.target.files[0])}
-                  className="glass-input w-full px-3.5 py-2 rounded-xl text-sm file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                />
-                <span className="text-[10px] text-slate-400 mt-1 block">Supports PNG, JPG, and JPEG formats. Optional.</span>
-              </div>
+
 
               <div className="flex gap-3 justify-end pt-4">
                 <button
@@ -603,16 +587,7 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-500 text-xs font-semibold mb-1.5">Update Profile Image</label>
-                <input
-                  type="file"
-                  accept=".png,.jpg,.jpeg"
-                  onChange={(e) => setProfileFile(e.target.files[0])}
-                  className="glass-input w-full px-3.5 py-2 rounded-xl text-sm file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                />
-                <span className="text-[10px] text-slate-400 mt-1 block">Leave empty to keep current profile picture. Supports PNG, JPG, and JPEG.</span>
-              </div>
+
 
               <div className="flex gap-3 justify-end pt-4">
                 <button
