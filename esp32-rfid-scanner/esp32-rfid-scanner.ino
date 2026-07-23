@@ -63,11 +63,13 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);
 
 
 
-// LED Pins
+// LED Pins (G12, G13, G14)
 
 #define GREEN_LED 12
 
 #define RED_LED 13
+
+#define BLUE_LED 14  // WiFi / Standby LED
 
 
 
@@ -123,11 +125,17 @@ void setup() {
 
   pinMode(RED_LED, OUTPUT);
 
+  pinMode(BLUE_LED, OUTPUT);
+
 
 
   // Turn on RED LED to indicate Wi-Fi connection phase
 
   digitalWrite(RED_LED, HIGH);
+
+  digitalWrite(GREEN_LED, LOW);
+
+  digitalWrite(BLUE_LED, LOW);
 
 
 
@@ -164,6 +172,8 @@ void setup() {
   // Indication of successful connection
 
   digitalWrite(RED_LED, LOW);
+
+  digitalWrite(BLUE_LED, HIGH); // Turn on Standby/Status LED when WiFi is ready
 
   
 
