@@ -262,11 +262,15 @@ void loop() {
 
 
 
-  // 🔴 Blink RED LED continuously while waiting/idle
+  // Standby state: Keep BLUE LED ON while waiting/idle
 
   if (!mfrc522.PICC_IsNewCardPresent()) {
 
-    blinkRed();
+    digitalWrite(BLUE_LED, HIGH);
+
+    digitalWrite(RED_LED, LOW);
+
+    digitalWrite(GREEN_LED, LOW);
 
     return;
 
@@ -278,7 +282,7 @@ void loop() {
 
 
 
-  // Turn off RED LED & stop blinking during scanning process
+  // Stop blinking / turn off RED LED during scanning process
 
   digitalWrite(RED_LED, LOW);
 
@@ -335,6 +339,8 @@ void loop() {
   digitalWrite(GREEN_LED, LOW);
 
   digitalWrite(RED_LED, LOW);
+
+  digitalWrite(BLUE_LED, HIGH);
 
   lcd.clear();
 
@@ -464,6 +470,10 @@ void sendRfidScan(String uid) {
 
           digitalWrite(GREEN_LED, HIGH);
 
+          digitalWrite(RED_LED, LOW);
+
+          digitalWrite(BLUE_LED, LOW);
+
           digitalWrite(BUZZER_PIN, HIGH);
 
           delay(300);
@@ -492,6 +502,10 @@ void sendRfidScan(String uid) {
 
           digitalWrite(GREEN_LED, HIGH);
 
+          digitalWrite(RED_LED, LOW);
+
+          digitalWrite(BLUE_LED, LOW);
+
           digitalWrite(BUZZER_PIN, HIGH);
 
           delay(300);
@@ -517,6 +531,10 @@ void sendRfidScan(String uid) {
 
 
           digitalWrite(RED_LED, HIGH);
+
+          digitalWrite(GREEN_LED, LOW);
+
+          digitalWrite(BLUE_LED, LOW);
 
           for (int i = 0; i < 3; i++) {
 
@@ -544,6 +562,10 @@ void sendRfidScan(String uid) {
 
         digitalWrite(RED_LED, HIGH);
 
+        digitalWrite(GREEN_LED, LOW);
+
+        digitalWrite(BLUE_LED, LOW);
+
       }
 
     } else {
@@ -565,6 +587,10 @@ void sendRfidScan(String uid) {
       lcd.print("Check server IP");
 
       digitalWrite(RED_LED, HIGH);
+
+      digitalWrite(GREEN_LED, LOW);
+
+      digitalWrite(BLUE_LED, LOW);
 
     }
 
