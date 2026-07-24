@@ -215,12 +215,17 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
       setToast({ visible: true, message: 'Returning...', type: 'loading' });
     },
     onSuccess: (data, variables) => {
-      const bookTitle = books?.find(b => b.rfidUid === variables.bookRfidUid)?.title || "Book";
+      const bookTitle = data.book?.title || books?.find(b => b.rfidUid === variables.bookRfidUid)?.title || "Book";
       const fineText = data.fine > 0 ? ` (Fine: ৳${data.fine})` : '';
-      setToast({ visible: true, message: `Successfully returned "${bookTitle}"${fineText}`, type: 'success' });
+      setToast({
+        visible: true,
+        message: `Successfully returned "${bookTitle}"${fineText}`,
+        type: 'success',
+        student: data.student,
+      });
       setTimeout(() => {
         setToast(prev => prev.type === 'success' ? { ...prev, visible: false } : prev);
-      }, 3500);
+      }, 4000);
 
       const fineTextMsg = data.fine > 0 ? ` Fine due: ৳${data.fine}` : '';
       setMessage({ type: 'success', text: `${data.message || 'Book returned successfully!'}${fineTextMsg} - Confirmed by Administration` });
@@ -670,13 +675,24 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
 
               {toast.type === 'success' && (
                 <>
-                  <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500 mb-5 shadow-sm shadow-emerald-500/10">
+                  <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500 mb-4 shadow-sm shadow-emerald-500/10">
                     <CheckCircle2 className="w-8 h-8" />
                   </div>
                   <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">Success!</h3>
-                  <p className="text-slate-500 text-sm mt-3.5 leading-relaxed font-semibold">
+                  <p className="text-slate-500 text-sm mt-2 leading-relaxed font-semibold">
                     {toast.message}
                   </p>
+
+                  {toast.student && (
+                    <div className="mt-4 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl w-full text-left">
+                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 mb-1">Borrower Information</div>
+                      <div className="text-xs font-bold text-slate-800">{toast.student.name}</div>
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1">
+                        <span>ID: <strong className="font-mono text-slate-700">{toast.student.studentId}</strong></span>
+                        {toast.student.department && <span>Dept: <strong>{toast.student.department}</strong></span>}
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
 

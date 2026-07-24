@@ -42,17 +42,17 @@ function App() {
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
       queryClient.invalidateQueries({ queryKey: ['students'] });
 
-      // Trigger global notification banner on every page
+      // Trigger global notification banner on every page with student details
       setReturnNotification({
         bookTitle: data.book?.title || 'Book',
         fine: data.fine || 0,
-        studentName: data.student?.name || null,
+        student: data.student || null,
         autoReturned: data.autoReturned || false,
       });
 
       setTimeout(() => {
         setReturnNotification(null);
-      }, 4500);
+      }, 5000);
     });
 
     socket.on('bookBorrowed', () => {
@@ -264,14 +264,46 @@ function App() {
               <p className="text-sm font-semibold text-white truncate mt-0.5">
                 "{returnNotification.bookTitle}"
               </p>
-              <div className="text-xs text-slate-200 mt-1 flex items-center justify-between font-medium">
-                <span>{returnNotification.studentName ? `Member: ${returnNotification.studentName}` : 'Returned to library collection'}</span>
-                {returnNotification.fine > 0 ? (
-                  <span className="text-amber-300 font-bold ml-2">Fine: ৳{returnNotification.fine}</span>
-                ) : (
-                  <span className="text-emerald-300 font-bold ml-2">No Fine</span>
-                )}
-              </div>
+              
+              {/* Student details display */}
+              {returnNotification.student ? (
+                <div className="mt-2 pt-2 border-t border-white/10 text-xs space-y-1">
+                  <div className="flex items-center justify-between text-slate-200">
+                    <span className="font-bold text-white truncate">{returnNotification.student.name}</span>
+                    <span className="text-[10px] font-mono bg-white/15 px-1.5 py-0.5 rounded text-emerald-300 font-bold">
+                      ID: {returnNotification.student.studentId}
+                    </span>
+                  </div>
+                  {returnNotification.student.department && (
+                    <div className="text-[11px] text-slate-300 flex items-center justify-between">
+                      <span>Dept: {returnNotification.student.department}</span>
+                      {returnNotification.fine > 0 ? (
+                        <span className="text-amber-300 font-bold ml-2">Fine: ৳{returnNotification.fine}</span>
+                      ) : (
+                        <span className="text-emerald-300 font-bold ml-2">No Fine</span>
+                      )}
+                    </div>
+                  )}
+                  {!returnNotification.student.department && (
+                    <div className="flex justify-end">
+                      {returnNotification.fine > 0 ? (
+                        <span className="text-amber-300 font-bold">Fine: ৳{returnNotification.fine}</span>
+                      ) : (
+                        <span className="text-emerald-300 font-bold">No Fine</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-xs text-slate-200 mt-1 flex items-center justify-between font-medium">
+                  <span>Returned to library collection</span>
+                  {returnNotification.fine > 0 ? (
+                    <span className="text-amber-300 font-bold ml-2">Fine: ৳{returnNotification.fine}</span>
+                  ) : (
+                    <span className="text-emerald-300 font-bold ml-2">No Fine</span>
+                  )}
+                </div>
+              )}
             </div>
           </motion.div>
         )}

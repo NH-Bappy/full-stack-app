@@ -82,6 +82,7 @@ export const returnBook = async (req, res) => {
     const transaction = await prisma.transaction.findFirst({
       where: { bookId: book.id, returnDate: null },
       orderBy: { borrowDate: 'desc' },
+      include: { student: true },
     });
 
     if (!transaction) {
@@ -113,12 +114,13 @@ export const returnBook = async (req, res) => {
         message: 'Book returned successfully',
         fine,
         book,
+        student: transaction.student,
       });
     } catch (socketError) {
       console.error('Failed to emit bookReturned socket event:', socketError.message);
     }
 
-    res.json({ message: 'Book returned successfully', fine });
+    res.json({ message: 'Book returned successfully', fine, book, student: transaction.student });
   } catch (error) {
     res.status(500).json({ message: 'Failed to return book', error: error.message });
   }
