@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
@@ -9,10 +10,12 @@ import StudentsView from './components/StudentsView';
 import BorrowersView from './components/BorrowersView';
 import TransactionsView from './components/TransactionsView';
 import ReportsView from './components/ReportsView';
+import { returnBook } from './api/libraryApi';
 import { io } from 'socket.io-client';
-import { Users } from 'lucide-react';
+import { Users, RotateCcw } from 'lucide-react';
 
 function App() {
+  const queryClient = useQueryClient();
   const { admin, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [booksFilter, setBooksFilter] = useState('all');
@@ -21,6 +24,7 @@ function App() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [scannedRfid, setScannedRfid] = useState('');
   const [detectedRfid, setDetectedRfid] = useState(null);
+  const [returnNotification, setReturnNotification] = useState(null);
 
   const isFormOpenRef = useRef(isFormOpen);
   useEffect(() => {
@@ -31,10 +35,44 @@ function App() {
     const socketUrl = import.meta.env.VITE_API_SOCKET_URL || 'http://localhost:3000';
     const socket = io(socketUrl);
 
-    socket.on('rfidScan', (data) => {
+    socket.on('bookReturned', (data) => {
+      // Invalidate queries globally so all active views update immediately
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['books'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+
+      // Trigger global notification banner on every page
+      setReturnNotification({
+        bookTitle: data.book?.title || 'Book',
+        fine: data.fine || 0,
+        studentName: data.student?.name || null,
+        autoReturned: data.autoReturned || false,
+      });
+
+      setTimeout(() => {
+        setReturnNotification(null);
+      }, 4500);
+    });
+
+    socket.on('bookBorrowed', () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['books'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+    });
+
+    socket.on('rfidScan', async (data) => {
       if (data.type === 'unknown') {
         if (!isFormOpenRef.current) {
           setDetectedRfid(data.rfidUid);
+        }
+      } else if (data.type === 'book' && !data.book.available && !data.autoReturned) {
+        // Global fallback: if scanned book is borrowed and wasn't auto-returned by backend scan, return it now
+        try {
+          await returnBook({ bookRfidUid: data.rfidUid });
+        } catch (err) {
+          console.error('Global auto-return failed:', err?.response?.data?.message || err.message);
         }
       }
     });
@@ -42,7 +80,7 @@ function App() {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [queryClient]);
 
   const navigateToView = (tab, filterVal) => {
     setActiveTab(tab);
@@ -196,6 +234,46 @@ function App() {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Global Book Returned Toast Notification */}
+      <AnimatePresence>
+        {returnNotification && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-[#0B4262] text-white rounded-2xl shadow-2xl p-4 border border-[#0B4262]/40 flex items-start gap-3.5 backdrop-blur-md"
+          >
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300 flex-shrink-0 mt-0.5 shadow-sm">
+              <RotateCcw className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-300">
+                  {returnNotification.autoReturned ? '⚡ Auto-Returned Book' : '📖 Book Returned'}
+                </h4>
+                <button
+                  onClick={() => setReturnNotification(null)}
+                  className="text-slate-300 hover:text-white text-xs px-1 font-bold cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="text-sm font-semibold text-white truncate mt-0.5">
+                "{returnNotification.bookTitle}"
+              </p>
+              <div className="text-xs text-slate-200 mt-1 flex items-center justify-between font-medium">
+                <span>{returnNotification.studentName ? `Member: ${returnNotification.studentName}` : 'Returned to library collection'}</span>
+                {returnNotification.fine > 0 ? (
+                  <span className="text-amber-300 font-bold ml-2">Fine: ৳{returnNotification.fine}</span>
+                ) : (
+                  <span className="text-emerald-300 font-bold ml-2">No Fine</span>
+                )}
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

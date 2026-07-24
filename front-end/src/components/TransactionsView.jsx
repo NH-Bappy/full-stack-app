@@ -126,7 +126,10 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
         const currentStudentId = studentIdRef.current;
         const isAvailable = data.book.available; // true = in library, false = checked out
 
-        if (!isAvailable) {
+        if (data.autoReturned) {
+          addSocketLog(`[AUTO-RETURN] Book "${data.book.title}" (RFID: ${data.rfidUid}) RETURNED automatically.`);
+          setMessage({ type: 'success', text: `Auto-returned book: "${data.book.title}"` });
+        } else if (!isAvailable) {
           // Automatically return the book since it is checked out
           setMessage({ type: 'success', text: `Auto-returning book: "${data.book.title}"...` });
           if (returnMutationRef.current) {

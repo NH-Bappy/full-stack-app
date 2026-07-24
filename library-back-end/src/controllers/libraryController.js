@@ -218,6 +218,74 @@ export const scanRfid = async (req, res) => {
     // 2. Try to find the UID in Book
     const book = await prisma.book.findUnique({ where: { rfidUid } });
     if (book) {
+      // Auto-return logic: if book is currently borrowed (!book.available), return it automatically on scan
+      if (!book.available) {
+        const transaction = await prisma.transaction.findFirst({
+          where: { bookId: book.id, returnDate: null },
+          orderBy: { borrowDate: 'desc' },
+          include: { student: true },
+        });
+
+        if (transaction) {
+          const returnDate = new Date();
+          const daysBorrowed = Math.max(1, Math.ceil((returnDate - transaction.borrowDate) / (1000 * 60 * 60 * 24)));
+          const fine = daysBorrowed > BORROW_LIMIT_DAYS ? (daysBorrowed - BORROW_LIMIT_DAYS) * FINE_PER_DAY : 0;
+
+          await prisma.$transaction(async (tx) => {
+            await tx.transaction.update({
+              where: { id: transaction.id },
+              data: {
+                returnDate,
+                fine,
+                returnedByAdminId: req.admin?.id || null,
+              },
+            });
+
+            await tx.book.update({
+              where: { id: book.id },
+              data: { available: true },
+            });
+          });
+
+          const updatedBook = { ...book, available: true };
+
+          try {
+            getIO().emit('bookReturned', {
+              message: 'Book returned automatically via RFID scan',
+              fine,
+              book: updatedBook,
+              student: transaction.student,
+              autoReturned: true,
+            });
+          } catch (socketError) {
+            console.error('Failed to emit bookReturned socket event:', socketError.message);
+          }
+
+          try {
+            getIO().emit('rfidScan', {
+              rfidUid,
+              type: 'book',
+              book: updatedBook,
+              student: transaction.student,
+              autoReturned: true,
+              fine,
+            });
+          } catch (socketError) {
+            console.error('Failed to emit rfidScan socket event for book:', socketError.message);
+          }
+
+          return res.status(200).json({
+            message: 'Book RFID scanned and auto-returned successfully',
+            rfidUid,
+            type: 'book',
+            book: updatedBook,
+            autoReturned: true,
+            fine,
+            student: transaction.student,
+          });
+        }
+      }
+
       try {
         getIO().emit('rfidScan', {
           rfidUid,
