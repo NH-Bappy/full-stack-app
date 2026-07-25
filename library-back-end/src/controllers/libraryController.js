@@ -5,7 +5,7 @@ const FINE_PER_DAY = Number(process.env.FINE_PER_DAY) || 10;
 const BORROW_LIMIT_DAYS = Number(process.env.BORROW_LIMIT_DAYS) || 7;
 
 export const borrowBook = async (req, res) => {
-  const { studentId, studentRfidUid, bookRfidUid, durationDays, durationHours, durationMinutes, dueDate } = req.body;
+  const { studentId, studentRfidUid, bookRfidUid, durationValue, durationUnit, durationDays, durationHours, durationMinutes, dueDate } = req.body;
 
   if ((!studentId && !studentRfidUid) || !bookRfidUid) {
     return res.status(400).json({ message: 'studentId or studentRfidUid, and bookRfidUid are required' });
@@ -35,6 +35,21 @@ export const borrowBook = async (req, res) => {
     let calculatedDueDate = null;
     if (dueDate) {
       calculatedDueDate = new Date(dueDate);
+    } else if (durationValue !== undefined && durationUnit) {
+      const val = Math.max(1, parseInt(durationValue, 10) || 6);
+      const now = new Date();
+      const unit = String(durationUnit).toLowerCase();
+      if (unit === 'minutes' || unit === 'minute') {
+        calculatedDueDate = new Date(now.getTime() + val * 60 * 1000);
+      } else if (unit === 'hours' || unit === 'hour') {
+        calculatedDueDate = new Date(now.getTime() + val * 60 * 60 * 1000);
+      } else if (unit === 'days' || unit === 'day') {
+        calculatedDueDate = new Date(now.getTime() + val * 24 * 60 * 60 * 1000);
+      } else if (unit === 'months' || unit === 'month') {
+        const d = new Date(now);
+        d.setMonth(d.getMonth() + val);
+        calculatedDueDate = d;
+      }
     } else if (durationDays !== undefined || durationHours !== undefined || durationMinutes !== undefined) {
       const days = Math.max(0, parseInt(durationDays, 10) || 0);
       const hours = Math.max(0, parseInt(durationHours, 10) || 0);
@@ -46,7 +61,9 @@ export const borrowBook = async (req, res) => {
     }
 
     if (!calculatedDueDate || isNaN(calculatedDueDate.getTime())) {
-      calculatedDueDate = new Date(Date.now() + BORROW_LIMIT_DAYS * 24 * 60 * 60 * 1000);
+      const defaultDueDate = new Date();
+      defaultDueDate.setMonth(defaultDueDate.getMonth() + 6);
+      calculatedDueDate = defaultDueDate;
     }
 
     const transaction = await prisma.$transaction(async (tx) => {
