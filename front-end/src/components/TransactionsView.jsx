@@ -44,9 +44,8 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   const [studentId, setStudentId] = useState('');
   const [studentRfid, setStudentRfid] = useState('');
   const [bookRfid, setBookRfid] = useState('');
-  const [durationDays, setDurationDays] = useState(7);
-  const [durationHours, setDurationHours] = useState(0);
-  const [durationMinutes, setDurationMinutes] = useState(0);
+  const [durationValue, setDurationValue] = useState(6);
+  const [durationUnit, setDurationUnit] = useState('months');
   const [message, setMessage] = useState({ type: '', text: '' });
   const [toast, setToast] = useState({ visible: false, message: '', type: 'loading' });
   const [lastBorrowedBookTitle, setLastBorrowedBookTitle] = useState('');
@@ -54,9 +53,8 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   // Refs to avoid stale closures in WebSocket event listeners
   const studentRfidRef = useRef(studentRfid);
   const studentIdRef = useRef(studentId);
-  const durationDaysRef = useRef(durationDays);
-  const durationHoursRef = useRef(durationHours);
-  const durationMinutesRef = useRef(durationMinutes);
+  const durationValueRef = useRef(durationValue);
+  const durationUnitRef = useRef(durationUnit);
   const borrowMutationRef = useRef(null);
   const returnMutationRef = useRef(null);
 
@@ -70,23 +68,22 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   }, [studentId]);
 
   useEffect(() => {
-    durationDaysRef.current = durationDays;
-  }, [durationDays]);
+    durationValueRef.current = durationValue;
+  }, [durationValue]);
 
   useEffect(() => {
-    durationHoursRef.current = durationHours;
-  }, [durationHours]);
-
-  useEffect(() => {
-    durationMinutesRef.current = durationMinutes;
-  }, [durationMinutes]);
+    durationUnitRef.current = durationUnit;
+  }, [durationUnit]);
 
   const getExpectedDueDate = () => {
-    const days = Math.max(0, parseInt(durationDays, 10) || 0);
-    const hours = Math.max(0, parseInt(durationHours, 10) || 0);
-    const minutes = Math.max(0, parseInt(durationMinutes, 10) || 0);
-    const totalMs = ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
-    return new Date(Date.now() + (totalMs > 0 ? totalMs : 7 * 24 * 60 * 60 * 1000));
+    const val = Math.max(1, parseInt(durationValue, 10) || 6);
+    const now = new Date();
+    if (durationUnit === 'minutes') return new Date(now.getTime() + val * 60 * 1000);
+    if (durationUnit === 'hours') return new Date(now.getTime() + val * 60 * 60 * 1000);
+    if (durationUnit === 'days') return new Date(now.getTime() + val * 24 * 60 * 60 * 1000);
+    const d = new Date(now);
+    d.setMonth(d.getMonth() + val);
+    return d;
   };
 
   // RFID Simulator State
@@ -170,9 +167,8 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
                 studentId: currentStudentId || null,
                 studentRfidUid: currentStudentRfid || null,
                 bookRfidUid: data.rfidUid,
-                durationDays: Number(durationDaysRef.current) || 0,
-                durationHours: Number(durationHoursRef.current) || 0,
-                durationMinutes: Number(durationMinutesRef.current) || 0,
+                durationValue: Number(durationValueRef.current) || 6,
+                durationUnit: durationUnitRef.current || 'months',
               });
             }
           } else {
@@ -311,9 +307,8 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
       studentId: studentId || null,
       studentRfidUid: studentRfid || null,
       bookRfidUid: bookRfid,
-      durationDays: Number(durationDays) || 0,
-      durationHours: Number(durationHours) || 0,
-      durationMinutes: Number(durationMinutes) || 0,
+      durationValue: Number(durationValue) || 6,
+      durationUnit: durationUnit || 'months',
     });
   };
 
@@ -340,9 +335,8 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
       borrowMutation.mutate({
         studentRfidUid: selectedSimStudent,
         bookRfidUid: selectedSimBook,
-        durationDays: Number(durationDays) || 0,
-        durationHours: Number(durationHours) || 0,
-        durationMinutes: Number(durationMinutes) || 0,
+        durationValue: Number(durationValue) || 6,
+        durationUnit: durationUnit || 'months',
       });
     } else {
       if (!selectedSimBook) {
@@ -456,49 +450,40 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
                     </div>
                   </div>
 
-                  {/* Borrow Duration Selection (Days, Hours, Minutes) */}
+                  {/* Borrow Duration Selection (Single Field + Unit Selector) */}
                   <div className="bg-slate-50/80 border border-slate-200 p-3.5 rounded-xl space-y-2.5">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5 text-indigo-600" />
-                        <span>Borrow Duration (Time)</span>
+                        <span>Borrow Duration</span>
                       </label>
-                      <span className="text-[10px] font-semibold text-slate-400">Set Day, Hour, Min</span>
+                      <span className="text-[10px] font-semibold text-slate-400">Default: 6 Months</span>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Days</label>
+                    <div className="grid grid-cols-5 gap-2">
+                      <div className="col-span-2">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Time Amount</label>
                         <input
                           type="number"
-                          min="0"
-                          max="365"
-                          value={durationDays}
-                          onChange={(e) => setDurationDays(e.target.value)}
-                          className="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-800 bg-white border-slate-200 focus:border-indigo-500"
+                          min="1"
+                          max="999"
+                          value={durationValue}
+                          onChange={(e) => setDurationValue(e.target.value)}
+                          className="glass-input w-full px-3 py-2 rounded-lg text-xs font-bold text-slate-800 bg-white border-slate-200 focus:border-indigo-500"
                         />
                       </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Hours</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="23"
-                          value={durationHours}
-                          onChange={(e) => setDurationHours(e.target.value)}
-                          className="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-800 bg-white border-slate-200 focus:border-indigo-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Minutes</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="59"
-                          value={durationMinutes}
-                          onChange={(e) => setDurationMinutes(e.target.value)}
-                          className="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-800 bg-white border-slate-200 focus:border-indigo-500"
-                        />
+                      <div className="col-span-3">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Time Unit</label>
+                        <select
+                          value={durationUnit}
+                          onChange={(e) => setDurationUnit(e.target.value)}
+                          className="glass-input w-full px-3 py-2 rounded-lg text-xs font-bold text-slate-800 bg-white border-slate-200 focus:border-indigo-500 cursor-pointer"
+                        >
+                          <option value="minutes">Minutes</option>
+                          <option value="hours">Hours</option>
+                          <option value="days">Days</option>
+                          <option value="months">Months (Default: 6)</option>
+                        </select>
                       </div>
                     </div>
 
