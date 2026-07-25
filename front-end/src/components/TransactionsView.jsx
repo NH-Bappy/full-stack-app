@@ -44,6 +44,9 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   const [studentId, setStudentId] = useState('');
   const [studentRfid, setStudentRfid] = useState('');
   const [bookRfid, setBookRfid] = useState('');
+  const [durationDays, setDurationDays] = useState(7);
+  const [durationHours, setDurationHours] = useState(0);
+  const [durationMinutes, setDurationMinutes] = useState(0);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [toast, setToast] = useState({ visible: false, message: '', type: 'loading' });
   const [lastBorrowedBookTitle, setLastBorrowedBookTitle] = useState('');
@@ -51,6 +54,9 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   // Refs to avoid stale closures in WebSocket event listeners
   const studentRfidRef = useRef(studentRfid);
   const studentIdRef = useRef(studentId);
+  const durationDaysRef = useRef(durationDays);
+  const durationHoursRef = useRef(durationHours);
+  const durationMinutesRef = useRef(durationMinutes);
   const borrowMutationRef = useRef(null);
   const returnMutationRef = useRef(null);
 
@@ -62,6 +68,26 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
   useEffect(() => {
     studentIdRef.current = studentId;
   }, [studentId]);
+
+  useEffect(() => {
+    durationDaysRef.current = durationDays;
+  }, [durationDays]);
+
+  useEffect(() => {
+    durationHoursRef.current = durationHours;
+  }, [durationHours]);
+
+  useEffect(() => {
+    durationMinutesRef.current = durationMinutes;
+  }, [durationMinutes]);
+
+  const getExpectedDueDate = () => {
+    const days = Math.max(0, parseInt(durationDays, 10) || 0);
+    const hours = Math.max(0, parseInt(durationHours, 10) || 0);
+    const minutes = Math.max(0, parseInt(durationMinutes, 10) || 0);
+    const totalMs = ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
+    return new Date(Date.now() + (totalMs > 0 ? totalMs : 7 * 24 * 60 * 60 * 1000));
+  };
 
   // RFID Simulator State
   const [selectedSimStudent, setSelectedSimStudent] = useState('');
@@ -143,7 +169,10 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
               borrowMutationRef.current.mutate({
                 studentId: currentStudentId || null,
                 studentRfidUid: currentStudentRfid || null,
-                bookRfidUid: data.rfidUid
+                bookRfidUid: data.rfidUid,
+                durationDays: Number(durationDaysRef.current) || 0,
+                durationHours: Number(durationHoursRef.current) || 0,
+                durationMinutes: Number(durationMinutesRef.current) || 0,
               });
             }
           } else {
@@ -281,7 +310,10 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
     borrowMutation.mutate({
       studentId: studentId || null,
       studentRfidUid: studentRfid || null,
-      bookRfidUid: bookRfid
+      bookRfidUid: bookRfid,
+      durationDays: Number(durationDays) || 0,
+      durationHours: Number(durationHours) || 0,
+      durationMinutes: Number(durationMinutes) || 0,
     });
   };
 
@@ -307,7 +339,10 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
       if (targetBook) setLastBorrowedBookTitle(targetBook.title);
       borrowMutation.mutate({
         studentRfidUid: selectedSimStudent,
-        bookRfidUid: selectedSimBook
+        bookRfidUid: selectedSimBook,
+        durationDays: Number(durationDays) || 0,
+        durationHours: Number(durationHours) || 0,
+        durationMinutes: Number(durationMinutes) || 0,
       });
     } else {
       if (!selectedSimBook) {
@@ -396,7 +431,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
               {mode === 'borrow' && (
                 <>
                   <div>
-                    <label className="block text-slate-505 text-slate-505 text-slate-500 text-xs font-semibold mb-1.5">Student identifier</label>
+                    <label className="block text-slate-500 text-xs font-semibold mb-1.5">Student Identifier</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="relative">
                         <User className="absolute inset-y-0 left-3 text-slate-400 w-4 h-4 my-auto" />
@@ -418,6 +453,66 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
                           className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-xs font-mono bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed"
                         />
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Borrow Duration Selection (Days, Hours, Minutes) */}
+                  <div className="bg-slate-50/80 border border-slate-200 p-3.5 rounded-xl space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-indigo-600" />
+                        <span>Borrow Duration (Time)</span>
+                      </label>
+                      <span className="text-[10px] font-semibold text-slate-400">Set Day, Hour, Min</span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Days</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="365"
+                          value={durationDays}
+                          onChange={(e) => setDurationDays(e.target.value)}
+                          className="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-800 bg-white border-slate-200 focus:border-indigo-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Hours</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="23"
+                          value={durationHours}
+                          onChange={(e) => setDurationHours(e.target.value)}
+                          className="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-800 bg-white border-slate-200 focus:border-indigo-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Minutes</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="59"
+                          value={durationMinutes}
+                          onChange={(e) => setDurationMinutes(e.target.value)}
+                          className="glass-input w-full px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-800 bg-white border-slate-200 focus:border-indigo-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="text-[11px] font-medium text-slate-600 flex items-center justify-between pt-2 border-t border-slate-200/70">
+                      <span className="text-slate-500 font-semibold">Expected Return Due:</span>
+                      <span className="font-bold text-indigo-700 bg-indigo-50/80 px-2 py-0.5 rounded border border-indigo-150">
+                        {getExpectedDueDate().toLocaleString([], {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
                     </div>
                   </div>
                 </>
@@ -605,18 +700,46 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
                         </td>
                         <td className="py-3 px-4 space-y-1">
                           <div className="flex items-center gap-1 text-[10px]">
-                            <span className="text-indigo-600 font-bold uppercase tracking-widest text-[8px]">Borrowed</span>
-                            <span className="text-slate-500">
-                              {new Date(trans.borrowDate).toLocaleDateString()}
+                            <span className="text-indigo-600 font-bold uppercase tracking-widest text-[8px]">Borrowed:</span>
+                            <span className="text-slate-600 font-medium">
+                              {new Date(trans.borrowDate).toLocaleString([], {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
                             </span>
                           </div>
+                          {trans.dueDate && (
+                            <div className="flex items-center gap-1 text-[10px]">
+                              <span className="text-slate-500 font-bold uppercase tracking-widest text-[8px]">Due:</span>
+                              <span className={`font-semibold ${
+                                !trans.returnDate && new Date(trans.dueDate) < new Date()
+                                  ? 'text-rose-600 font-bold bg-rose-50 px-1 rounded'
+                                  : 'text-slate-700'
+                              }`}>
+                                {new Date(trans.dueDate).toLocaleString([], {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                                {!trans.returnDate && new Date(trans.dueDate) < new Date() && ' (Overdue)'}
+                              </span>
+                            </div>
+                          )}
                           <div className="flex items-center gap-1 text-[10px]">
-                            <span className="text-slate-400 uppercase tracking-widest text-[8px] font-bold">Returned</span>
+                            <span className="text-slate-400 uppercase tracking-widest text-[8px] font-bold">Returned:</span>
                             <span className="text-slate-600">
                               {trans.returnDate ? (
-                                new Date(trans.returnDate).toLocaleDateString()
+                                new Date(trans.returnDate).toLocaleString([], {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })
                               ) : (
-                                <span className="text-indigo-500 font-bold">Pending return</span>
+                                <span className="text-indigo-600 font-bold">Pending return</span>
                               )}
                             </span>
                           </div>
