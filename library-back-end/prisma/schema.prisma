@@ -35,6 +35,7 @@ model Transaction {
   studentId         Int
   bookId            Int
   borrowDate        DateTime  @default(now())
+  dueDate           DateTime?
   returnDate        DateTime?
   fine              Float     @default(0)
   borrowedByAdminId Int?
