@@ -5,7 +5,7 @@ const FINE_PER_DAY = Number(process.env.FINE_PER_DAY) || 10;
 const BORROW_LIMIT_DAYS = Number(process.env.BORROW_LIMIT_DAYS) || 7;
 
 export const borrowBook = async (req, res) => {
-  const { studentId, studentRfidUid, bookRfidUid } = req.body;
+  const { studentId, studentRfidUid, bookRfidUid, durationDays, durationHours, durationMinutes, dueDate } = req.body;
 
   if ((!studentId && !studentRfidUid) || !bookRfidUid) {
     return res.status(400).json({ message: 'studentId or studentRfidUid, and bookRfidUid are required' });
@@ -32,11 +32,29 @@ export const borrowBook = async (req, res) => {
       return res.status(409).json({ message: 'Book is already borrowed' });
     }
 
+    let calculatedDueDate = null;
+    if (dueDate) {
+      calculatedDueDate = new Date(dueDate);
+    } else if (durationDays !== undefined || durationHours !== undefined || durationMinutes !== undefined) {
+      const days = Math.max(0, parseInt(durationDays, 10) || 0);
+      const hours = Math.max(0, parseInt(durationHours, 10) || 0);
+      const minutes = Math.max(0, parseInt(durationMinutes, 10) || 0);
+      const totalMs = ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
+      if (totalMs > 0) {
+        calculatedDueDate = new Date(Date.now() + totalMs);
+      }
+    }
+
+    if (!calculatedDueDate || isNaN(calculatedDueDate.getTime())) {
+      calculatedDueDate = new Date(Date.now() + BORROW_LIMIT_DAYS * 24 * 60 * 60 * 1000);
+    }
+
     const transaction = await prisma.$transaction(async (tx) => {
       const trans = await tx.transaction.create({
         data: {
           studentId: student.id,
           bookId: book.id,
+          dueDate: calculatedDueDate,
           borrowedByAdminId: req.admin?.id,
         },
       });
@@ -90,8 +108,13 @@ export const returnBook = async (req, res) => {
     }
 
     const returnDate = new Date();
-    const daysBorrowed = Math.max(1, Math.ceil((returnDate - transaction.borrowDate) / (1000 * 60 * 60 * 24)));
-    const fine = daysBorrowed > BORROW_LIMIT_DAYS ? (daysBorrowed - BORROW_LIMIT_DAYS) * FINE_PER_DAY : 0;
+    const effectiveDueDate = transaction.dueDate
+      ? new Date(transaction.dueDate)
+      : new Date(new Date(transaction.borrowDate).getTime() + BORROW_LIMIT_DAYS * 24 * 60 * 60 * 1000);
+
+    const overdueMs = returnDate.getTime() - effectiveDueDate.getTime();
+    const daysOverdue = overdueMs > 0 ? Math.ceil(overdueMs / (1000 * 60 * 60 * 24)) : 0;
+    const fine = daysOverdue * FINE_PER_DAY;
 
     await prisma.$transaction(async (tx) => {
       await tx.transaction.update({
@@ -128,7 +151,8 @@ export const returnBook = async (req, res) => {
 
 export const getDashboard = async (_req, res) => {
   try {
-    const overdueCutoff = new Date(Date.now() - BORROW_LIMIT_DAYS * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const overdueCutoff = new Date(now.getTime() - BORROW_LIMIT_DAYS * 24 * 60 * 60 * 1000);
     const [totalBooks, borrowedBooks, totalStudents, overdueBooks] = await Promise.all([
       prisma.book.count(),
       prisma.book.count({ where: { available: false } }),
@@ -136,7 +160,10 @@ export const getDashboard = async (_req, res) => {
       prisma.transaction.count({
         where: {
           returnDate: null,
-          borrowDate: { lt: overdueCutoff },
+          OR: [
+            { dueDate: { lt: now } },
+            { dueDate: null, borrowDate: { lt: overdueCutoff } },
+          ],
         },
       }),
     ]);
@@ -173,11 +200,15 @@ export const getTransactions = async (_req, res) => {
 
 export const getOverdueTransactions = async (_req, res) => {
   try {
-    const overdueCutoff = new Date(Date.now() - BORROW_LIMIT_DAYS * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const overdueCutoff = new Date(now.getTime() - BORROW_LIMIT_DAYS * 24 * 60 * 60 * 1000);
     const transactions = await prisma.transaction.findMany({
       where: {
         returnDate: null,
-        borrowDate: { lt: overdueCutoff },
+        OR: [
+          { dueDate: { lt: now } },
+          { dueDate: null, borrowDate: { lt: overdueCutoff } },
+        ],
       },
       include: {
         student: true,
@@ -230,8 +261,13 @@ export const scanRfid = async (req, res) => {
 
         if (transaction) {
           const returnDate = new Date();
-          const daysBorrowed = Math.max(1, Math.ceil((returnDate - transaction.borrowDate) / (1000 * 60 * 60 * 24)));
-          const fine = daysBorrowed > BORROW_LIMIT_DAYS ? (daysBorrowed - BORROW_LIMIT_DAYS) * FINE_PER_DAY : 0;
+          const effectiveDueDate = transaction.dueDate
+            ? new Date(transaction.dueDate)
+            : new Date(new Date(transaction.borrowDate).getTime() + BORROW_LIMIT_DAYS * 24 * 60 * 60 * 1000);
+
+          const overdueMs = returnDate.getTime() - effectiveDueDate.getTime();
+          const daysOverdue = overdueMs > 0 ? Math.ceil(overdueMs / (1000 * 60 * 60 * 24)) : 0;
+          const fine = daysOverdue * FINE_PER_DAY;
 
           await prisma.$transaction(async (tx) => {
             await tx.transaction.update({
