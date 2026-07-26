@@ -333,6 +333,7 @@ export const scanRfid = async (req, res) => {
             message: 'Book RFID scanned and auto-returned successfully',
             rfidUid,
             type: 'book',
+            action: 'returned',
             book: updatedBook,
             autoReturned: true,
             fine,
@@ -345,12 +346,13 @@ export const scanRfid = async (req, res) => {
         getIO().emit('rfidScan', {
           rfidUid,
           type: 'book',
+          action: 'borrowing',
           book,
         });
       } catch (socketError) {
         console.error('Failed to emit rfidScan socket event for book:', socketError.message);
       }
-      return res.status(200).json({ message: 'Book RFID scanned successfully', rfidUid, type: 'book', book });
+      return res.status(200).json({ message: 'Book RFID scanned successfully', rfidUid, type: 'book', action: 'borrowing', book });
     }
 
     // 3. Not found in either

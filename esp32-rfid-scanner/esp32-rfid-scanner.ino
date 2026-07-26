@@ -484,15 +484,33 @@ void sendRfidScan(String uid) {
 
         } else if (type == "book") {
 
-          // Access Granted - Book Found
+          // Access Granted - Book Found (Borrowing or Returning)
 
           String bookTitle = resDoc["book"]["title"];
+
+          bool autoReturned = resDoc["autoReturned"] | false;
+
+          String action = resDoc["action"] | "";
+
+
 
           lcd.clear();
 
           lcd.setCursor(0, 0);
 
-          lcd.print("Book Found:");
+
+
+          if (autoReturned || action == "returned") {
+
+            lcd.print("Returning...");
+
+          } else {
+
+            lcd.print("Borrowing...");
+
+          }
+
+
 
           lcd.setCursor(0, 1);
 

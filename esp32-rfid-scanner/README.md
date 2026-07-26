@@ -70,5 +70,5 @@ Open the frontend dashboard in your browser (typically `http://localhost:5173`).
 
 ### Testing the Scanner:
 1. Scan a registered student card -> The LCD will show **"Student Found: [Name]"**, the green LED will light up, and the buzzer will beep. The frontend page will auto-fill the student's RFID field.
-2. Scan a registered book tag -> The LCD will show **"Book Found: [Title]"**, the green LED will light up, and the buzzer will beep. The frontend page will auto-fill the book's RFID field.
+2. Scan a registered book tag -> The LCD will show **"Borrowing..."** (for borrow scans) or **"Returning..."** (for return scans) along with the book title, the green LED will light up, and the buzzer will beep. The frontend page will auto-fill the book's RFID field.
 3. Scan an unregistered tag -> The LCD will show **"Unknown RFID"**, the red LED will light up, and the buzzer will beep 3 times.
