@@ -12,7 +12,7 @@ import TransactionsView from './components/TransactionsView';
 import ReportsView from './components/ReportsView';
 import { returnBook } from './api/libraryApi';
 import { io } from 'socket.io-client';
-import { Users, RotateCcw } from 'lucide-react';
+import { Users } from 'lucide-react';
 
 function App() {
   const queryClient = useQueryClient();
@@ -24,7 +24,6 @@ function App() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [scannedRfid, setScannedRfid] = useState('');
   const [detectedRfid, setDetectedRfid] = useState(null);
-  const [returnNotification, setReturnNotification] = useState(null);
 
   const isFormOpenRef = useRef(isFormOpen);
   useEffect(() => {
@@ -35,24 +34,12 @@ function App() {
     const socketUrl = import.meta.env.VITE_API_SOCKET_URL || 'http://localhost:3000';
     const socket = io(socketUrl);
 
-    socket.on('bookReturned', (data) => {
+    socket.on('bookReturned', () => {
       // Invalidate queries globally so all active views update immediately
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['books'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
       queryClient.invalidateQueries({ queryKey: ['students'] });
-
-      // Trigger global notification banner on every page with student details
-      setReturnNotification({
-        bookTitle: data.book?.title || 'Book',
-        fine: data.fine || 0,
-        student: data.student || null,
-        autoReturned: data.autoReturned || false,
-      });
-
-      setTimeout(() => {
-        setReturnNotification(null);
-      }, 5000);
     });
 
     socket.on('bookBorrowed', () => {
@@ -234,78 +221,6 @@ function App() {
               </div>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
-
-      {/* Global Book Returned Toast Notification */}
-      <AnimatePresence>
-        {returnNotification && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-slate-900 text-white rounded-2xl shadow-2xl p-4 border border-slate-800 flex items-start gap-3.5 backdrop-blur-md"
-          >
-            <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-200 flex-shrink-0 mt-0.5 shadow-sm">
-              <RotateCcw className="w-5 h-5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                  {returnNotification.autoReturned ? '⚡ Auto-Returned Book' : '📖 Book Returned'}
-                </h4>
-                <button
-                  onClick={() => setReturnNotification(null)}
-                  className="text-slate-400 hover:text-white text-xs px-1 font-bold cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
-              <p className="text-sm font-semibold text-white truncate mt-0.5">
-                "{returnNotification.bookTitle}"
-              </p>
-              
-              {/* Student details display */}
-              {returnNotification.student ? (
-                <div className="mt-2 pt-2 border-t border-slate-800 text-xs space-y-1">
-                  <div className="flex items-center justify-between text-slate-200">
-                    <span className="font-bold text-white truncate">{returnNotification.student.name}</span>
-                    <span className="text-[10px] font-mono bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-slate-300 font-bold">
-                      ID: {returnNotification.student.studentId}
-                    </span>
-                  </div>
-                  {returnNotification.student.department && (
-                    <div className="text-[11px] text-slate-400 flex items-center justify-between">
-                      <span>Dept: {returnNotification.student.department}</span>
-                      {returnNotification.fine > 0 ? (
-                        <span className="text-slate-200 font-bold ml-2">Fine: ৳{returnNotification.fine}</span>
-                      ) : (
-                        <span className="text-slate-400 font-bold ml-2">No Fine</span>
-                      )}
-                    </div>
-                  )}
-                  {!returnNotification.student.department && (
-                    <div className="flex justify-end">
-                      {returnNotification.fine > 0 ? (
-                        <span className="text-slate-200 font-bold">Fine: ৳{returnNotification.fine}</span>
-                      ) : (
-                        <span className="text-slate-400 font-bold">No Fine</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-xs text-slate-400 mt-1 flex items-center justify-between font-medium">
-                  <span>Returned to library collection</span>
-                  {returnNotification.fine > 0 ? (
-                    <span className="text-slate-200 font-bold ml-2">Fine: ৳{returnNotification.fine}</span>
-                  ) : (
-                    <span className="text-slate-400 font-bold ml-2">No Fine</span>
-                  )}
-                </div>
-              )}
-            </div>
-          </motion.div>
         )}
       </AnimatePresence>
     </div>
