@@ -277,7 +277,7 @@ const StudentsView = ({ scannedRfid, clearScannedRfid, setIsFormOpen }) => {
             resetForm();
             setIsAddOpen(true);
           }}
-          className="flex items-center justify-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all cursor-pointer w-full sm:w-auto"
+          className="flex items-center justify-center gap-2 px-5 py-3 bg-[#0B4262] hover:bg-[#083047] text-white rounded-xl text-sm font-bold shadow-md transition-all cursor-pointer w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           <span>Register Student</span>

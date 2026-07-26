@@ -396,7 +396,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
                 }}
                 className={`flex-1 py-2.5 rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
                   mode === 'borrow'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-[#0B4262] text-white shadow-sm'
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -410,7 +410,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
                 }}
                 className={`flex-1 py-2.5 rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
                   mode === 'return'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-[#0B4262] text-white shadow-sm'
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
               >

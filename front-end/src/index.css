@@ -4,26 +4,26 @@
 @theme {
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   
-  --animate-fade-in-up: fade-in-up 0.4s ease-out forwards;
+  --animate-fade-in-up: fade-in-up 0.3s ease-out forwards;
   --animate-pulse-subtle: pulse-subtle 2s infinite ease-in-out;
   --animate-float: float 3s ease-in-out infinite;
 
-  /* Overriding Indigo color palette to Blue/Cyan palette for system-wide thematic harmony matching GGAI Logo */
+  /* Deep Blue & Sky Blue palette for system harmony */
   --color-indigo-50: #f0f9ff;
   --color-indigo-100: #e0f2fe;
   --color-indigo-200: #bae6fd;
   --color-indigo-300: #7dd3fc;
   --color-indigo-400: #38bdf8;
-  --color-indigo-500: #00A2E8; /* Vibrant Sky Blue / Cyan (Matches Logo Gear) */
-  --color-indigo-600: #0B4262; /* Deep Blue */
-  --color-indigo-700: #08324a; /* Dark Deep Blue */
+  --color-indigo-500: #00A2E8; /* Sky Blue */
+  --color-indigo-600: #0B4262; /* Deep Navy Blue */
+  --color-indigo-700: #08324a;
   --color-indigo-800: #062334;
   --color-indigo-900: #041621;
 
   @keyframes fade-in-up {
     from {
       opacity: 0;
-      transform: translateY(16px);
+      transform: translateY(12px);
     }
     to {
       opacity: 1;
@@ -59,11 +59,11 @@
   background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(11, 66, 98, 0.2);
-  border-radius: 4px;
+  background: #cbd5e1;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(11, 66, 98, 0.4);
+  background: #94a3b8;
 }
 
 html, body, #root {
@@ -75,61 +75,53 @@ html, body, #root {
 
 body {
   font-family: var(--font-sans);
-  background-color: #EAE5E0; /* Warm beige directly on the body */
-  color: #1e293b;
+  background-color: #f8fafc; /* Crisp Slate-50 Canvas */
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Premium Card Panels */
+/* Ultra Clean White Card Panels */
 .glass-panel {
   background: #ffffff;
-  border: 1px solid rgba(11, 66, 98, 0.06);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
+  border-radius: 1rem;
 }
 
 .glass-panel-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease-in-out;
 }
 .glass-panel-hover:hover {
   background: #ffffff;
-  border-color: rgba(11, 66, 98, 0.2);
-  box-shadow: 0 12px 24px -10px rgba(11, 66, 98, 0.08);
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
   transform: translateY(-2px);
 }
 
-/* Custom grid dot pattern helper classes */
-.dot-pattern-white {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
-  background-size: 12px 12px;
-}
-
-.dot-pattern-gray {
-  background-image: radial-gradient(circle, rgba(11, 66, 98, 0.05) 1px, transparent 1px);
-  background-size: 12px 12px;
-}
-
-/* Form input styling for Light theme */
+/* Clean Input Styling */
 .glass-input {
   background: #ffffff;
   border: 1px solid #cbd5e1;
   color: #0f172a;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease-in-out;
+  border-radius: 0.75rem;
 }
 .glass-input::placeholder {
   color: #94a3b8;
 }
 .glass-input:focus {
   border-color: #0B4262;
-  box-shadow: 0 0 0 2px rgba(11, 66, 98, 0.1);
+  box-shadow: 0 0 0 3px rgba(11, 66, 98, 0.12);
   outline: none;
   background: #ffffff;
 }
 
 select.glass-input {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right 0.5rem center;
+  background-position: right 0.75rem center;
   background-repeat: no-repeat;
-  background-size: 1.5em 1.5em;
+  background-size: 1.25em 1.25em;
   padding-right: 2.5rem;
   appearance: none;
 }
-

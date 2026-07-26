@@ -128,11 +128,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#EAE5E0] text-slate-800 font-sans relative">
-      {/* Soft Background Accent Glows */}
-      <div className="absolute top-[-10%] right-[-10%] w-[45%] h-[45%] rounded-full bg-[#0b4262]/5 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[45%] h-[45%] rounded-full bg-slate-500/5 blur-[120px] pointer-events-none" />
-
+    <div className="min-h-screen flex bg-slate-50 text-slate-800 font-sans relative">
       {/* Sidebar Navigation */}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 

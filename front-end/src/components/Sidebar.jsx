@@ -26,9 +26,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-[#e2e8f0]/40 flex flex-col h-screen sticky top-0">
+    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0 shadow-sm z-20">
       {/* Brand Header */}
-      <div className="p-5 border-b border-slate-100/60 flex items-center gap-3">
+      <div className="p-5 border-b border-slate-100 flex items-center gap-3">
         <div className="w-11 h-11 flex-shrink-0 flex items-center justify-center">
           <img src={logo} alt="GGAI Logo" className="w-full h-full object-contain" />
         </div>

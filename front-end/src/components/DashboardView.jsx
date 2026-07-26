@@ -116,117 +116,117 @@ const DashboardView = ({ setActiveTab, navigateToView }) => {
         </div>
       ) : (
         <>
-          {/* Stats Cards in a 4-column grid (Original Layout) */}
+          {/* Stats Cards in a 4-column grid */}
           <motion.div 
             variants={containerVariants}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
           >
-            {/* Card 1: Total Books (Deep Forest Green with white dots) */}
+            {/* Card 1: Total Books */}
             <motion.div 
               variants={cardVariants}
-              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.25)" }}
-              className="rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-md bg-[#0B4262] text-white dot-pattern-white cursor-pointer hover:shadow-lg transition-all duration-300"
+              whileHover={{ y: -3 }}
+              className="rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-[#0B4262] text-white cursor-pointer hover:shadow-md transition-all duration-200"
               onClick={() => navigateToView && navigateToView('books', 'all')}
             >
               <div className="flex items-start justify-between z-10">
                 <div>
-                  <span className="text-[10px] font-bold text-[#c2ccd1] uppercase tracking-wider block">
+                  <span className="text-[10px] font-extrabold text-slate-300 uppercase tracking-wider block">
                     Total Books
                   </span>
-                  <span className="text-3xl font-black text-white tracking-tight mt-1.5 block">
+                  <span className="text-3xl font-extrabold text-white tracking-tight mt-1.5 block">
                     {stats ? stats.totalBooks.toLocaleString() : '0'}
                   </span>
                 </div>
-                <div className="p-3 rounded-xl bg-white/10 text-white backdrop-blur-md">
-                  <BookOpen className="w-5 h-5 text-[#00A2E8]" />
+                <div className="p-3 rounded-xl bg-white/10 text-white">
+                  <BookOpen className="w-5 h-5 text-sky-400" />
                 </div>
               </div>
 
               <div className="border-t border-white/10 pt-3 mt-4 flex items-center justify-between text-xs z-10">
-                <span className="text-[#c2ccd1] font-medium">Total books in library catalog</span>
-                <Users className="w-3.5 h-3.5 text-[#c2ccd1]" />
+                <span className="text-slate-300 font-medium">Total catalog items</span>
+                <Users className="w-3.5 h-3.5 text-slate-400" />
               </div>
             </motion.div>
 
-            {/* Card 2: Available Books (White Card with gray dots) */}
+            {/* Card 2: Available Books */}
             <motion.div 
               variants={cardVariants}
-              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.08)" }}
-              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-pointer hover:shadow-md transition-all duration-300"
+              whileHover={{ y: -3 }}
+              className="glass-panel glass-panel-hover rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white cursor-pointer transition-all duration-200"
               onClick={() => navigateToView && navigateToView('books', 'available')}
             >
               <div className="flex items-start justify-between z-10">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
                     Available Books
                   </span>
-                  <span className="text-3xl font-black text-[#0B4262] tracking-tight mt-1.5 block">
+                  <span className="text-3xl font-extrabold text-slate-800 tracking-tight mt-1.5 block">
                     {stats ? stats.availableBooks.toLocaleString() : '0'}
                   </span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-50 text-slate-500">
-                  <CheckCircle2 className="w-5 h-5 text-[#0B4262]" />
+                <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                  <CheckCircle2 className="w-5 h-5" />
                 </div>
               </div>
 
               <div className="border-t border-slate-100 pt-3 mt-4 flex items-center justify-between text-xs z-10">
-                <span className="text-slate-400 font-medium">Books ready for borrowing</span>
+                <span className="text-slate-400 font-medium">Ready for borrowing</span>
                 <Users className="w-3.5 h-3.5 text-slate-400" />
               </div>
             </motion.div>
 
-            {/* Card 3: Active Borrows (White Card with gray dots) */}
+            {/* Card 3: Active Borrows */}
             <motion.div 
               variants={cardVariants}
-              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.08)" }}
-              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-pointer hover:shadow-md transition-all duration-300"
+              whileHover={{ y: -3 }}
+              className="glass-panel glass-panel-hover rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white cursor-pointer transition-all duration-200"
               onClick={() => navigateToView && navigateToView('books', 'borrowed')}
             >
               <div className="flex items-start justify-between z-10">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
                     Active Borrows
                   </span>
-                  <span className="text-3xl font-black text-[#1e293b] tracking-tight mt-1.5 block">
+                  <span className="text-3xl font-extrabold text-slate-800 tracking-tight mt-1.5 block">
                     {stats ? stats.borrowedBooks.toLocaleString() : '0'}
                   </span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-50 text-slate-500">
-                  <TrendingUp className="w-5 h-5 text-slate-600" />
+                <div className="p-3 rounded-xl bg-sky-50 text-sky-600">
+                  <TrendingUp className="w-5 h-5" />
                 </div>
               </div>
 
               <div className="border-t border-slate-100 pt-3 mt-4 flex items-center justify-between text-xs z-10">
-                <span className="text-slate-400 font-medium">Currently borrowed out</span>
+                <span className="text-slate-400 font-medium">Currently on hold</span>
                 <Users className="w-3.5 h-3.5 text-slate-400" />
               </div>
             </motion.div>
 
-            {/* Card 4: Overdue Books (White Card with gray dots) */}
+            {/* Card 4: Overdue Books */}
             <motion.div 
               variants={cardVariants}
-              whileHover={{ y: -4, boxShadow: "0 12px 20px -8px rgba(11, 66, 98, 0.08)" }}
-              className="glass-panel rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white dot-pattern-gray cursor-pointer hover:shadow-md transition-all duration-300"
+              whileHover={{ y: -3 }}
+              className="glass-panel glass-panel-hover rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden group shadow-sm bg-white cursor-pointer transition-all duration-200"
               onClick={() => navigateToView && navigateToView('transactions', true)}
             >
               <div className="flex items-start justify-between z-10">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
                     Overdue Books
                   </span>
-                  <span className="text-3xl font-black text-slate-800 tracking-tight mt-1.5 block">
+                  <span className="text-3xl font-extrabold text-slate-800 tracking-tight mt-1.5 block">
                     {stats ? stats.overdueBooks.toLocaleString() : '0'}
                   </span>
                 </div>
-                <div className="p-3 rounded-xl bg-red-50 text-red-500">
-                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                <div className="p-3 rounded-xl bg-rose-50 text-rose-500">
+                  <AlertTriangle className="w-5 h-5" />
                 </div>
               </div>
 
               <div className="border-t border-slate-100 pt-3 mt-4 flex items-center justify-between text-xs z-10">
-                <span className="text-slate-400 font-medium">Returned past standard term</span>
+                <span className="text-slate-400 font-medium">Exceeded loan term</span>
                 <Users className="w-3.5 h-3.5 text-slate-400" />
               </div>
             </motion.div>
@@ -239,11 +239,11 @@ const DashboardView = ({ setActiveTab, navigateToView }) => {
             animate="show"
             className="grid grid-cols-1 lg:grid-cols-3 gap-6"
           >
-            {/* Pie Chart Card: Inventory Ratio (Sage gradient card) */}
+            {/* Pie Chart Card: Inventory Ratio */}
             <motion.div 
               variants={cardVariants}
               whileHover={{ y: -2 }}
-              className="bg-gradient-to-b from-[#C2CFC6] to-[#DFE5E1] border border-white/40 shadow-sm rounded-3xl p-6 flex flex-col"
+              className="glass-panel rounded-2xl p-6 flex flex-col bg-white"
             >
               <h3 className="text-base font-extrabold text-slate-800 mb-1">Inventory Ratio</h3>
               <p className="text-xs text-slate-500 mb-4">Availability status breakdown</p>
