@@ -244,19 +244,19 @@ function App() {
             initial={{ opacity: 0, y: 50, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-[#0B4262] text-white rounded-2xl shadow-2xl p-4 border border-[#0B4262]/40 flex items-start gap-3.5 backdrop-blur-md"
+            className="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-slate-900 text-white rounded-2xl shadow-2xl p-4 border border-slate-800 flex items-start gap-3.5 backdrop-blur-md"
           >
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300 flex-shrink-0 mt-0.5 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-200 flex-shrink-0 mt-0.5 shadow-sm">
               <RotateCcw className="w-5 h-5" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-300">
+                <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
                   {returnNotification.autoReturned ? '⚡ Auto-Returned Book' : '📖 Book Returned'}
                 </h4>
                 <button
                   onClick={() => setReturnNotification(null)}
-                  className="text-slate-300 hover:text-white text-xs px-1 font-bold cursor-pointer"
+                  className="text-slate-400 hover:text-white text-xs px-1 font-bold cursor-pointer"
                 >
                   ✕
                 </button>
@@ -267,40 +267,40 @@ function App() {
               
               {/* Student details display */}
               {returnNotification.student ? (
-                <div className="mt-2 pt-2 border-t border-white/10 text-xs space-y-1">
+                <div className="mt-2 pt-2 border-t border-slate-800 text-xs space-y-1">
                   <div className="flex items-center justify-between text-slate-200">
                     <span className="font-bold text-white truncate">{returnNotification.student.name}</span>
-                    <span className="text-[10px] font-mono bg-white/15 px-1.5 py-0.5 rounded text-emerald-300 font-bold">
+                    <span className="text-[10px] font-mono bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-slate-300 font-bold">
                       ID: {returnNotification.student.studentId}
                     </span>
                   </div>
                   {returnNotification.student.department && (
-                    <div className="text-[11px] text-slate-300 flex items-center justify-between">
+                    <div className="text-[11px] text-slate-400 flex items-center justify-between">
                       <span>Dept: {returnNotification.student.department}</span>
                       {returnNotification.fine > 0 ? (
-                        <span className="text-amber-300 font-bold ml-2">Fine: ৳{returnNotification.fine}</span>
+                        <span className="text-slate-200 font-bold ml-2">Fine: ৳{returnNotification.fine}</span>
                       ) : (
-                        <span className="text-emerald-300 font-bold ml-2">No Fine</span>
+                        <span className="text-slate-400 font-bold ml-2">No Fine</span>
                       )}
                     </div>
                   )}
                   {!returnNotification.student.department && (
                     <div className="flex justify-end">
                       {returnNotification.fine > 0 ? (
-                        <span className="text-amber-300 font-bold">Fine: ৳{returnNotification.fine}</span>
+                        <span className="text-slate-200 font-bold">Fine: ৳{returnNotification.fine}</span>
                       ) : (
-                        <span className="text-emerald-300 font-bold">No Fine</span>
+                        <span className="text-slate-400 font-bold">No Fine</span>
                       )}
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="text-xs text-slate-200 mt-1 flex items-center justify-between font-medium">
+                <div className="text-xs text-slate-400 mt-1 flex items-center justify-between font-medium">
                   <span>Returned to library collection</span>
                   {returnNotification.fine > 0 ? (
-                    <span className="text-amber-300 font-bold ml-2">Fine: ৳{returnNotification.fine}</span>
+                    <span className="text-slate-200 font-bold ml-2">Fine: ৳{returnNotification.fine}</span>
                   ) : (
-                    <span className="text-emerald-300 font-bold ml-2">No Fine</span>
+                    <span className="text-slate-400 font-bold ml-2">No Fine</span>
                   )}
                 </div>
               )}

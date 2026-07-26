@@ -152,6 +152,15 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
         if (data.autoReturned) {
           addSocketLog(`[AUTO-RETURN] Book "${data.book.title}" (RFID: ${data.rfidUid}) RETURNED automatically.`);
           setMessage({ type: 'success', text: `Auto-returned book: "${data.book.title}"` });
+          setToast({
+            visible: true,
+            message: `Successfully returned "${data.book.title}"${data.fine > 0 ? ` (Fine: ৳${data.fine})` : ''}`,
+            type: 'success',
+            student: data.student,
+          });
+          setTimeout(() => {
+            setToast(prev => prev.type === 'success' ? { ...prev, visible: false } : prev);
+          }, 4000);
         } else if (!isAvailable) {
           // Automatically return the book since it is checked out
           setMessage({ type: 'success', text: `Auto-returning book: "${data.book.title}"...` });
@@ -205,7 +214,13 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
     },
     onSuccess: (data, variables) => {
       const bookTitle = books?.find(b => b.rfidUid === variables.bookRfidUid)?.title || lastBorrowedBookTitle || "Book";
-      setToast({ visible: true, message: `Successfully borrowed "${bookTitle}"`, type: 'success' });
+      const studentObj = data.student || data.transaction?.student || students?.find(s => s.studentId === variables.studentId || s.rfidUid === variables.studentRfidUid);
+      setToast({
+        visible: true,
+        message: `Successfully borrowed "${bookTitle}"`,
+        type: 'success',
+        student: studentObj,
+      });
       setTimeout(() => {
         setToast(prev => prev.type === 'success' ? { ...prev, visible: false } : prev);
       }, 3500);
@@ -775,7 +790,7 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
             >
               {toast.type === 'loading' && (
                 <>
-                  <div className="w-16 h-16 border-4 border-[#0B4262] border-t-transparent rounded-full animate-spin mb-5" />
+                  <div className="w-16 h-16 border-4 border-slate-800 border-t-transparent rounded-full animate-spin mb-5" />
                   <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">{toast.message}</h3>
                   <p className="text-slate-400 text-xs mt-2">Processing transaction with secure RFID network.</p>
                 </>
@@ -783,21 +798,21 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
 
               {toast.type === 'success' && (
                 <>
-                  <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500 mb-4 shadow-sm shadow-emerald-500/10">
-                    <CheckCircle2 className="w-8 h-8" />
+                  <div className="w-16 h-16 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800 mb-4 shadow-sm">
+                    <CheckCircle2 className="w-8 h-8 text-slate-800" />
                   </div>
                   <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">Success!</h3>
-                  <p className="text-slate-500 text-sm mt-2 leading-relaxed font-semibold">
+                  <p className="text-slate-600 text-sm mt-2 leading-relaxed font-semibold">
                     {toast.message}
                   </p>
 
                   {toast.student && (
                     <div className="mt-4 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl w-full text-left">
-                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 mb-1">Borrower Information</div>
+                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">Borrower Information</div>
                       <div className="text-xs font-bold text-slate-800">{toast.student.name}</div>
                       <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1">
                         <span>ID: <strong className="font-mono text-slate-700">{toast.student.studentId}</strong></span>
-                        {toast.student.department && <span>Dept: <strong>{toast.student.department}</strong></span>}
+                        {toast.student.department && <span>Dept: <strong className="text-slate-700">{toast.student.department}</strong></span>}
                       </div>
                     </div>
                   )}
@@ -806,16 +821,16 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
 
               {toast.type === 'error' && (
                 <>
-                  <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 mb-5 shadow-sm shadow-rose-500/10">
-                    <AlertCircle className="w-8 h-8" />
+                  <div className="w-16 h-16 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800 mb-5 shadow-sm">
+                    <AlertCircle className="w-8 h-8 text-slate-800" />
                   </div>
                   <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">Operation Failed</h3>
-                  <p className="text-slate-550 text-xs mt-3.5 leading-relaxed font-semibold">
+                  <p className="text-slate-600 text-xs mt-3.5 leading-relaxed font-semibold">
                     {toast.message}
                   </p>
                   <button 
                     onClick={() => setToast(prev => ({ ...prev, visible: false }))}
-                    className="mt-6 px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                    className="mt-6 px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
                   >
                     Close
                   </button>

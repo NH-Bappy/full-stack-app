@@ -95,7 +95,7 @@ export const borrowBook = async (req, res) => {
       console.error('Failed to emit bookBorrowed socket event:', socketError.message);
     }
 
-    res.status(201).json({ message: 'Book borrowed successfully', transaction });
+    res.status(201).json({ message: 'Book borrowed successfully', transaction, student });
   } catch (error) {
     res.status(500).json({ message: 'Failed to borrow book', error: error.message });
   }
