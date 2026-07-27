@@ -1,12 +1,24 @@
 import { prisma } from '../config/db.js';
 
-export const getTopBorrowedBooks = async (_req, res) => {
+export const getTopBorrowedBooks = async (req, res) => {
   try {
+    const adminId = req.admin?.id;
+    const transactionsFilter = adminId
+      ? {
+          where: {
+            OR: [
+              { borrowedByAdminId: adminId },
+              { returnedByAdminId: adminId },
+            ],
+          },
+        }
+      : true;
+
     const books = await prisma.book.findMany({
       where: { active: true },
       include: {
         _count: {
-          select: { transactions: true },
+          select: { transactions: transactionsFilter },
         },
       },
       orderBy: {
@@ -23,14 +35,25 @@ export const getTopBorrowedBooks = async (_req, res) => {
   }
 };
 
-export const getActiveFines = async (_req, res) => {
+export const getActiveFines = async (req, res) => {
   try {
-    const transactions = await prisma.transaction.findMany({
-      where: {
-        fine: {
-          gt: 0,
-        },
+    const adminId = req.admin?.id;
+    const whereClause = {
+      fine: {
+        gt: 0,
       },
+      ...(adminId
+        ? {
+            OR: [
+              { borrowedByAdminId: adminId },
+              { returnedByAdminId: adminId },
+            ],
+          }
+        : {}),
+    };
+
+    const transactions = await prisma.transaction.findMany({
+      where: whereClause,
       include: {
         student: true,
         book: true,

@@ -46,12 +46,21 @@ export const createStudent = async (req, res) => {
 
 export const getStudentById = async (req, res) => {
   const { id } = req.params;
+  const adminId = req.admin?.id;
 
   try {
     const student = await prisma.student.findFirst({
       where: { id: Number(id), active: true },
       include: {
         transactions: {
+          where: adminId
+            ? {
+                OR: [
+                  { borrowedByAdminId: adminId },
+                  { returnedByAdminId: adminId },
+                ],
+              }
+            : {},
           include: {
             book: true,
           },
@@ -128,17 +137,28 @@ export const deleteStudent = async (req, res) => {
   }
 };
 
-export const getBorrowingStudents = async (_req, res) => {
+export const getBorrowingStudents = async (req, res) => {
   try {
+    const adminId = req.admin?.id;
+    const adminFilter = adminId
+      ? {
+          OR: [
+            { borrowedByAdminId: adminId },
+            { returnedByAdminId: adminId },
+          ],
+        }
+      : {};
+
     const students = await prisma.student.findMany({
       where: {
         active: true,
         transactions: {
-          some: {},
+          some: adminFilter,
         },
       },
       include: {
         transactions: {
+          where: adminFilter,
           include: {
             book: true,
           },

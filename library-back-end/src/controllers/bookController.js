@@ -1,12 +1,34 @@
 import { prisma } from '../config/db.js';
 
-export const getBooks = async (_req, res) => {
+export const getBooks = async (req, res) => {
   try {
+    const adminId = req.admin?.id;
     const books = await prisma.book.findMany({
       where: { active: true },
+      include: {
+        transactions: adminId ? {
+          where: {
+            borrowedByAdminId: adminId,
+            returnDate: null,
+          },
+        } : false,
+      },
       orderBy: { createdAt: 'desc' },
     });
-    res.json(books);
+
+    const mappedBooks = books.map((book) => {
+      if (adminId) {
+        const isBorrowedByMe = Array.isArray(book.transactions) && book.transactions.length > 0;
+        const { transactions, ...rest } = book;
+        return {
+          ...rest,
+          available: !isBorrowedByMe,
+        };
+      }
+      return book;
+    });
+
+    res.json(mappedBooks);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch books', error: error.message });
   }
@@ -46,12 +68,21 @@ export const createBook = async (req, res) => {
 
 export const getBookById = async (req, res) => {
   const { id } = req.params;
+  const adminId = req.admin?.id;
 
   try {
     const book = await prisma.book.findFirst({
       where: { id: Number(id), active: true },
       include: {
         transactions: {
+          where: adminId
+            ? {
+                OR: [
+                  { borrowedByAdminId: adminId },
+                  { returnedByAdminId: adminId },
+                ],
+              }
+            : {},
           include: {
             student: true,
           },

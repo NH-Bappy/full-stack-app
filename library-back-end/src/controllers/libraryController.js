@@ -166,29 +166,45 @@ export const returnBook = async (req, res) => {
   }
 };
 
-export const getDashboard = async (_req, res) => {
+export const getDashboard = async (req, res) => {
   try {
+    const adminId = req.admin?.id;
     const now = new Date();
     const overdueCutoff = new Date(now.getTime() - BORROW_LIMIT_DAYS * 24 * 60 * 60 * 1000);
-    const [totalBooks, borrowedBooks, totalStudents, overdueBooks] = await Promise.all([
-      prisma.book.count(),
-      prisma.book.count({ where: { available: false } }),
-      prisma.student.count(),
-      prisma.transaction.count({
-        where: {
+
+    const adminActiveBorrowFilter = adminId
+      ? { borrowedByAdminId: adminId, returnDate: null }
+      : { returnDate: null };
+
+    const adminOverdueFilter = adminId
+      ? {
+          borrowedByAdminId: adminId,
           returnDate: null,
           OR: [
             { dueDate: { lt: now } },
             { dueDate: null, borrowDate: { lt: overdueCutoff } },
           ],
-        },
-      }),
+        }
+      : {
+          returnDate: null,
+          OR: [
+            { dueDate: { lt: now } },
+            { dueDate: null, borrowDate: { lt: overdueCutoff } },
+          ],
+        };
+
+    const [totalBooks, totalBorrowedBooks, totalStudents, adminBorrowedCount, overdueBooks] = await Promise.all([
+      prisma.book.count({ where: { active: true } }),
+      prisma.book.count({ where: { active: true, available: false } }),
+      prisma.student.count({ where: { active: true } }),
+      prisma.transaction.count({ where: adminActiveBorrowFilter }),
+      prisma.transaction.count({ where: adminOverdueFilter }),
     ]);
 
     res.json({
       totalBooks,
-      borrowedBooks,
-      availableBooks: totalBooks - borrowedBooks,
+      borrowedBooks: adminBorrowedCount,
+      availableBooks: totalBooks - adminBorrowedCount,
       totalStudents,
       overdueBooks,
     });
@@ -197,9 +213,20 @@ export const getDashboard = async (_req, res) => {
   }
 };
 
-export const getTransactions = async (_req, res) => {
+export const getTransactions = async (req, res) => {
   try {
+    const adminId = req.admin?.id;
+    const whereClause = adminId
+      ? {
+          OR: [
+            { borrowedByAdminId: adminId },
+            { returnedByAdminId: adminId },
+          ],
+        }
+      : {};
+
     const transactions = await prisma.transaction.findMany({
+      where: whereClause,
       include: {
         student: true,
         book: true,
@@ -215,18 +242,23 @@ export const getTransactions = async (_req, res) => {
   }
 };
 
-export const getOverdueTransactions = async (_req, res) => {
+export const getOverdueTransactions = async (req, res) => {
   try {
+    const adminId = req.admin?.id;
     const now = new Date();
     const overdueCutoff = new Date(now.getTime() - BORROW_LIMIT_DAYS * 24 * 60 * 60 * 1000);
+
+    const whereClause = {
+      returnDate: null,
+      ...(adminId ? { borrowedByAdminId: adminId } : {}),
+      OR: [
+        { dueDate: { lt: now } },
+        { dueDate: null, borrowDate: { lt: overdueCutoff } },
+      ],
+    };
+
     const transactions = await prisma.transaction.findMany({
-      where: {
-        returnDate: null,
-        OR: [
-          { dueDate: { lt: now } },
-          { dueDate: null, borrowDate: { lt: overdueCutoff } },
-        ],
-      },
+      where: whereClause,
       include: {
         student: true,
         book: true,
@@ -372,14 +404,23 @@ export const scanRfid = async (req, res) => {
 
 export const deleteTransaction = async (req, res) => {
   const { id } = req.params;
+  const adminId = req.admin?.id;
 
   try {
-    const transaction = await prisma.transaction.findUnique({
-      where: { id: Number(id) },
+    const transaction = await prisma.transaction.findFirst({
+      where: {
+        id: Number(id),
+        ...(adminId ? {
+          OR: [
+            { borrowedByAdminId: adminId },
+            { returnedByAdminId: adminId },
+          ],
+        } : {}),
+      },
     });
 
     if (!transaction) {
-      return res.status(404).json({ message: 'Transaction not found' });
+      return res.status(404).json({ message: 'Transaction not found or unauthorized' });
     }
 
     // Sync book availability if active transaction is deleted
