@@ -25,7 +25,11 @@ import {
   CartesianGrid 
 } from 'recharts';
 
+import { useAuth } from '../context/AuthContext';
+
 const DashboardView = ({ setActiveTab, navigateToView }) => {
+  const { admin } = useAuth();
+
   // Fetch overall statistics
   const { 
     data: stats, 
@@ -33,7 +37,7 @@ const DashboardView = ({ setActiveTab, navigateToView }) => {
     error: statsError, 
     refetch: refetchStats 
   } = useQuery({
-    queryKey: ['dashboardStats'],
+    queryKey: ['dashboardStats', admin?.id],
     queryFn: getDashboard,
     refetchInterval: 10000, // Refetch every 10 seconds to keep live
   });
@@ -44,7 +48,7 @@ const DashboardView = ({ setActiveTab, navigateToView }) => {
     isLoading: overdueLoading, 
     error: overdueError 
   } = useQuery({
-    queryKey: ['overdueTransactions'],
+    queryKey: ['overdueTransactions', admin?.id],
     queryFn: getOverdueTransactions,
   });
 

@@ -16,14 +16,17 @@ import {
   Barcode
 } from 'lucide-react';
 
+import { useAuth } from '../context/AuthContext';
+
 const BorrowersView = () => {
+  const { admin } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all'); // all, active, completed
   const [expandedStudentId, setExpandedStudentId] = useState(null);
 
   // Fetch borrowing students
   const { data: students, isLoading, error } = useQuery({
-    queryKey: ['borrowingStudents'],
+    queryKey: ['borrowingStudents', admin?.id],
     queryFn: getBorrowingStudents,
   });
 

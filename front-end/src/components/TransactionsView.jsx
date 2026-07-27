@@ -19,7 +19,10 @@ import {
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { useAuth } from '../context/AuthContext';
+
 const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue }) => {
+  const { admin } = useAuth();
   const queryClient = useQueryClient();
   
   // Search & Filter
@@ -95,18 +98,18 @@ const TransactionsView = ({ initialShowOverdue = false, setInitialShowOverdue })
 
   // Fetch registered books & students for the simulator dropdowns
   const { data: books } = useQuery({
-    queryKey: ['books'],
+    queryKey: ['books', admin?.id],
     queryFn: getBooks,
   });
 
   const { data: students } = useQuery({
-    queryKey: ['students'],
+    queryKey: ['students', admin?.id],
     queryFn: getStudents,
   });
 
   // Fetch transactions list
   const { data: transactions, isLoading, refetch: refetchTransactions } = useQuery({
-    queryKey: ['transactions', showOnlyOverdue],
+    queryKey: ['transactions', admin?.id, showOnlyOverdue],
     queryFn: () => getTransactions(showOnlyOverdue),
   });
 

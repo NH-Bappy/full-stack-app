@@ -17,7 +17,10 @@ import {
   FileText
 } from 'lucide-react';
 
+import { useAuth } from '../context/AuthContext';
+
 const BooksView = ({ initialFilter = 'all', setInitialFilter, scannedRfid, clearScannedRfid, setIsFormOpen }) => {
+  const { admin } = useAuth();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState(initialFilter);
@@ -87,7 +90,7 @@ const BooksView = ({ initialFilter = 'all', setInitialFilter, scannedRfid, clear
 
   // Fetch Books
   const { data: books, isLoading, error } = useQuery({
-    queryKey: ['books'],
+    queryKey: ['books', admin?.id],
     queryFn: getBooks,
   });
 

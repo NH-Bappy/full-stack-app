@@ -1,9 +1,11 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { loginAdmin, registerAdmin } from '../api/libraryApi';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+  const queryClient = useQueryClient();
   const [admin, setAdmin] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,6 +31,7 @@ export const AuthProvider = ({ children }) => {
       
       localStorage.setItem('library_admin_token', token);
       localStorage.setItem('library_admin', JSON.stringify(adminData));
+      queryClient.clear();
       setAdmin(adminData);
       return { success: true };
     } catch (error) {
@@ -52,6 +55,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('library_admin_token');
     localStorage.removeItem('library_admin');
+    queryClient.clear();
     setAdmin(null);
   };
 

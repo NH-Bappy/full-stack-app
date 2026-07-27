@@ -22,20 +22,23 @@ import {
   RefreshCw
 } from 'lucide-react';
 
+import { useAuth } from '../context/AuthContext';
+
 const ReportsView = () => {
+  const { admin } = useAuth();
   const queryClient = useQueryClient();
   const [seedSuccess, setSeedSuccess] = useState('');
   const [seedError, setSeedError] = useState('');
 
   // Fetch top borrowed books
   const { data: topBooks, isLoading: loadingTopBooks, refetch: refetchTopBooks } = useQuery({
-    queryKey: ['reportsTopBorrowed'],
+    queryKey: ['reportsTopBorrowed', admin?.id],
     queryFn: getTopBorrowedBooks,
   });
 
   // Fetch active fines
   const { data: activeFines, isLoading: loadingFines, refetch: refetchFines } = useQuery({
-    queryKey: ['reportsActiveFines'],
+    queryKey: ['reportsActiveFines', admin?.id],
     queryFn: getActiveFines,
   });
 
