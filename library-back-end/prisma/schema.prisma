@@ -15,6 +15,8 @@ model Student {
   profileImage String        @default("")
   active       Boolean       @default(true)
   createdAt    DateTime      @default(now())
+  adminId      Int?
+  admin        Admin?        @relation(fields: [adminId], references: [id])
   transactions Transaction[]
 }
 
@@ -50,6 +52,7 @@ model Admin {
   id                    Int           @id @default(autoincrement())
   username              String        @unique
   password              String
+  students              Student[]
   borrowedTransactions  Transaction[] @relation("BorrowedByAdmin")
   returnedTransactions  Transaction[] @relation("ReturnedByAdmin")
 }

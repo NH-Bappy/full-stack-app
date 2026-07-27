@@ -1,9 +1,13 @@
 import { prisma } from '../config/db.js';
 
-export const getStudents = async (_req, res) => {
+export const getStudents = async (req, res) => {
   try {
+    const adminId = req.admin?.id;
     const students = await prisma.student.findMany({
-      where: { active: true },
+      where: {
+        active: true,
+        ...(adminId ? { adminId } : {}),
+      },
       orderBy: { createdAt: 'desc' },
     });
     res.json(students);
@@ -14,6 +18,7 @@ export const getStudents = async (_req, res) => {
 
 export const createStudent = async (req, res) => {
   const { name, studentId, email, rfidUid } = req.body;
+  const adminId = req.admin?.id;
 
   if (!name || !studentId || !rfidUid) {
     return res.status(400).json({ message: 'Name, studentId, and rfidUid are required' });
@@ -35,7 +40,7 @@ export const createStudent = async (req, res) => {
     }
 
     const student = await prisma.student.create({
-      data: { name, studentId, email, rfidUid, profileImage: "" },
+      data: { name, studentId, email, rfidUid, profileImage: "", adminId },
     });
 
     res.status(201).json(student);
@@ -50,7 +55,11 @@ export const getStudentById = async (req, res) => {
 
   try {
     const student = await prisma.student.findFirst({
-      where: { id: Number(id), active: true },
+      where: {
+        id: Number(id),
+        active: true,
+        ...(adminId ? { adminId } : {}),
+      },
       include: {
         transactions: {
           where: adminId
@@ -84,12 +93,16 @@ export const getStudentById = async (req, res) => {
 export const updateStudent = async (req, res) => {
   const { id } = req.params;
   const { name, studentId, email } = req.body;
+  const adminId = req.admin?.id;
 
   try {
     const updatedData = { name, studentId, email };
 
-    const existingStudent = await prisma.student.findUnique({
-      where: { id: Number(id) }
+    const existingStudent = await prisma.student.findFirst({
+      where: {
+        id: Number(id),
+        ...(adminId ? { adminId } : {}),
+      }
     });
 
     if (!existingStudent) {
@@ -109,12 +122,16 @@ export const updateStudent = async (req, res) => {
 
 export const deleteStudent = async (req, res) => {
   const { id } = req.params;
+  const adminId = req.admin?.id;
 
   try {
     const studentIdNum = Number(id);
 
-    const student = await prisma.student.findUnique({
-      where: { id: studentIdNum }
+    const student = await prisma.student.findFirst({
+      where: {
+        id: studentIdNum,
+        ...(adminId ? { adminId } : {}),
+      }
     });
 
     if (!student) {

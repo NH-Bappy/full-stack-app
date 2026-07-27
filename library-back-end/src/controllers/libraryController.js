@@ -196,7 +196,7 @@ export const getDashboard = async (req, res) => {
     const [totalBooks, totalBorrowedBooks, totalStudents, adminBorrowedCount, overdueBooks] = await Promise.all([
       prisma.book.count({ where: { active: true } }),
       prisma.book.count({ where: { active: true, available: false } }),
-      prisma.student.count({ where: { active: true } }),
+      prisma.student.count({ where: { active: true, ...(adminId ? { adminId } : {}) } }),
       prisma.transaction.count({ where: adminActiveBorrowFilter }),
       prisma.transaction.count({ where: adminOverdueFilter }),
     ]);
