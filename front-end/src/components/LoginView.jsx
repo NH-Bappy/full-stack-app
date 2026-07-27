@@ -55,8 +55,8 @@ const LoginView = () => {
       <div className="w-full max-w-md animate-fade-in-up">
         {/* Logo and Brand */}
         <div className="flex flex-col items-center mb-8 text-center">
-          <div className="w-20 h-20 flex items-center justify-center mb-3 animate-float">
-            <img src={logo} alt="GGAI Logo" className="w-full h-full object-contain" />
+          <div className="w-20 h-20 flex items-center justify-center mb-3 animate-float rounded-full overflow-hidden shadow-md border border-slate-200/60 bg-white">
+            <img src={logo} alt="GGAI Logo" className="w-full h-full object-cover rounded-full" />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 mb-1">
             G.G.A.I Library
